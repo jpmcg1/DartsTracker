@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Darts Tracker</string>
+
+    <string name="desc">An image of a dartboard</string>
+
+    <string name="numberOfPlayers">How many people are playing?</string>
 </resources>

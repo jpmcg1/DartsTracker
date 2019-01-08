@@ -4,4 +4,16 @@
     <string name="desc">An image of a dartboard</string>
 
     <string name="numberOfPlayers">How many people are playing?</string>
+
+    <string name="playerOne">Player 1</string>
+
+    <string name="playerTwo">Player 2</string>
+
+    <string name="playerThree">Player 3</string>
+
+    <string name="playerFour">Player 4</string>
+
+    <string name="scoreInput">Input Score</string>
+
+    <string name="enterButton">Enter</string>
 </resources>

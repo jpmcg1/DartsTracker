@@ -26,6 +26,18 @@ public final class GameContract {
     // Each entry in the table represents a single player
     public static final class GameEntry implements BaseColumns {
 
+        // The content URI to access the games data
+        public static final Uri CONTENT_URI = Uri.withAppendedPath(BASE_CONTENT_URI, PATH_GAME);
+
+        // Table name
+        public static final String TABLE_NAME = "games";
+
+        // Table column headers
+        public static final String _ID = BaseColumns._ID;
+        public static final String COLUMN_PLAYER_ONE = "player_one";
+        public static final String COLUMN_PLAYER_TWO = "player_two";
+        public static final String COLUMN_PLAYER_THREE = "player_three";
+        public static final String COLUMN_PLAYER_FOUR = "player_four";
     }
 
 }

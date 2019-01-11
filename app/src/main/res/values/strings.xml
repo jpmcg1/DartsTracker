@@ -16,4 +16,6 @@
     <string name="scoreInput">Input Score</string>
 
     <string name="enterButton">Enter</string>
+
+    <string name="validScoreInput">PLEASE ENTER A VALID NUMBER</string>
 </resources>

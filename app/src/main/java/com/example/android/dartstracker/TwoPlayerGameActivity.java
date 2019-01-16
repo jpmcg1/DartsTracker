@@ -2,6 +2,7 @@ package com.example.android.dartstracker;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.provider.BaseColumns;
@@ -25,14 +26,17 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
     // Edit text field for the score inputted by the user
     private EditText mScoreEditText;
     // The score input by Player 1 1 is saved in this variable
-    private int mPlayerOneIndividualScore;
+    private int mPlayerOneScore;
     // The score input by Player 2 is saved in this variable
-    private int mPlayerTwoIndividualScore;
+    private int mPlayerTwoScore;
 
     // Integers to track whose turn is next
     private int PLAYER_ONE_TURN = 1;
     private int PLAYER_TWO_TURN = 2;
     private int mCurrentTurn;
+
+    // Initial score
+    private int initialScore = 501;
 
     // ContentValues object to store the input for player 1 and 2 prior to insertion
     // into the database
@@ -45,7 +49,6 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
 
     // Database helper object
     private GameDbHelper mDbHelper;
-
     // Database
     private SQLiteDatabase mDatabase;
 
@@ -62,36 +65,21 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         // Set the current turn to Player 1
         mCurrentTurn = PLAYER_ONE_TURN;
 
+        // Set the current scores to the initial score defined in the variables
+        mPlayerOneScore = initialScore;
+        mPlayerTwoScore = initialScore;
+
         // Use a ContentValues object to insert the initial scores into the table
         ContentValues initialValues = new ContentValues();
-        initialValues.put(GameEntry.COLUMN_PLAYER_ONE, 501);
-        initialValues.put(GameEntry.COLUMN_PLAYER_TWO, 501);
+        initialValues.put(GameEntry.COLUMN_PLAYER_ONE, initialScore);
+        initialValues.put(GameEntry.COLUMN_PLAYER_TWO, initialScore);
         mDatabase.insert(GameEntry.TABLE_NAME, null, initialValues);
 
         // Set the initial scores in the app interface to 501 for each player
         playerOneCurrentScore = (TextView) findViewById(R.id.playerOneScore);
-        playerOneCurrentScore.setText("501");
+        playerOneCurrentScore.setText(Integer.toString(initialScore));
         playerTwoCurrentScore = (TextView) findViewById(R.id.playerTwoScore);
-        playerTwoCurrentScore.setText("501");
-
-        /*String[] projection = {
-                BaseColumns._ID,
-                GameEntry.COLUMN_PLAYER_ONE,
-                GameEntry.COLUMN_PLAYER_TWO
-        };
-
-        String selection = GameEntry.COLUMN_PLAYER_ONE + " = ?";
-        String[] selectionArgs = { "player_one" };
-
-        Cursor cursor = database.query(
-                GameEntry.TABLE_NAME,
-                projection,
-                selection,
-                selectionArgs,
-                null,
-                null,
-                null
-        );*/
+        playerTwoCurrentScore.setText(Integer.toString(initialScore));
 
         // When the enter button is pressed, the score is recorded
         Button enterScore = (Button) findViewById(R.id.enterScoreButton);
@@ -115,6 +103,17 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
 
                     // Add the data in the ContentValues object to the database
                     insertScoresIntoDatabase();
+
+                    // Update the scores in the UI
+                    int currentTotalPlayerOne = currentScore(GameEntry.COLUMN_PLAYER_ONE, GameEntry.TABLE_NAME);
+                    Log.d("TOTAL SCORE: ", Integer.toString(currentTotalPlayerOne));
+                    mPlayerOneScore = initialScore - currentTotalPlayerOne;
+                    playerOneCurrentScore.setText(Integer.toString(mPlayerOneScore));
+
+                    int currentTotalPlayerTwo = currentScore(GameEntry.COLUMN_PLAYER_TWO, GameEntry.TABLE_NAME);
+                    Log.d("TOTAL SCORE: ", Integer.toString(currentTotalPlayerTwo));
+                    mPlayerTwoScore = initialScore - currentTotalPlayerTwo;
+                    playerTwoCurrentScore.setText(Integer.toString(mPlayerTwoScore));
                 }
             }
         });
@@ -124,9 +123,6 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
     private void insertPlayerOneScore(String score) {
         // Check to see if the input is a valid number between 0 and 180
         if (isInteger(score)) {
-            mPlayerOneIndividualScore = Integer.parseInt(score);
-            Log.v("PLAYER 1 SCORE INPUT: ", Integer.toString(mPlayerOneIndividualScore));
-
             // Add the score into the ContentValues object in preparation for addition
             // into the database
             newInput.put(GameEntry.COLUMN_PLAYER_ONE, Integer.parseInt(score));
@@ -146,9 +142,6 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
     private void insertPlayerTwoScore(String score) {
         // Check to see if the input is a valid number between 0 and 180
         if (isInteger(score)) {
-        mPlayerTwoIndividualScore = Integer.parseInt(score);
-        Log.v("PLAYER 2 SCORE INPUT: ", Integer.toString(mPlayerTwoIndividualScore));
-
         // Add the score into the ContentValues object in preparation for addition
         // into the database
         newInput.put(GameEntry.COLUMN_PLAYER_TWO, Integer.parseInt(score));
@@ -179,5 +172,17 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
             return false;
         }
         return false;
+    }
+
+    // Method to get the current score
+    private int currentScore(String player, String tableName) {
+            mDatabase = mDbHelper.getWritableDatabase();
+            // Access the player's column in the database and add up all the scores
+            try {
+                String sql = "SELECT TOTAL(" + player + ") FROM " + tableName;
+                return (int)DatabaseUtils.longForQuery(mDatabase, sql, null);
+            } finally {
+
+            }
     }
 }

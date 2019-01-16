@@ -1,8 +1,10 @@
 package com.example.android.dartstracker;
 
 import android.content.ContentValues;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.provider.BaseColumns;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -22,8 +24,19 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
 
     // Edit text field for the score inputted by the user
     private EditText mScoreEditText;
-    // The score input by the user is save in this variable
-    private int mIndividualScore;
+    // The score input by Player 1 1 is saved in this variable
+    private int mPlayerOneIndividualScore;
+    // The score input by Player 2 is saved in this variable
+    private int mPlayerTwoIndividualScore;
+
+    // Integers to track whose turn is next
+    private int PLAYER_ONE_TURN = 1;
+    private int PLAYER_TWO_TURN = 2;
+    private int mCurrentTurn;
+
+    // ContentValues object to store the input for player 1 and 2 prior to insertion
+    // into the database
+    private ContentValues newInput = new ContentValues();
 
     // Current score of Player 1
     private TextView playerOneCurrentScore;
@@ -33,6 +46,9 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
     // Database helper object
     private GameDbHelper mDbHelper;
 
+    // Database
+    private SQLiteDatabase mDatabase;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,39 +57,115 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         // Create a database helper object for the game
         mDbHelper = new GameDbHelper(getBaseContext());
         // Create the actual database and make it writable in order to add to it
-        SQLiteDatabase database = mDbHelper.getWritableDatabase();
+        mDatabase = mDbHelper.getWritableDatabase();
 
-        // Use a ContentValues object to insert the scores into the table
+        // Set the current turn to Player 1
+        mCurrentTurn = PLAYER_ONE_TURN;
+
+        // Use a ContentValues object to insert the initial scores into the table
         ContentValues initialValues = new ContentValues();
         initialValues.put(GameEntry.COLUMN_PLAYER_ONE, 501);
         initialValues.put(GameEntry.COLUMN_PLAYER_TWO, 501);
+        mDatabase.insert(GameEntry.TABLE_NAME, null, initialValues);
 
-        long newRowId = database.insert(GameEntry.TABLE_NAME, null, initialValues);
+        // Set the initial scores in the app interface to 501 for each player
+        playerOneCurrentScore = (TextView) findViewById(R.id.playerOneScore);
+        playerOneCurrentScore.setText("501");
+        playerTwoCurrentScore = (TextView) findViewById(R.id.playerTwoScore);
+        playerTwoCurrentScore.setText("501");
+
+        /*String[] projection = {
+                BaseColumns._ID,
+                GameEntry.COLUMN_PLAYER_ONE,
+                GameEntry.COLUMN_PLAYER_TWO
+        };
+
+        String selection = GameEntry.COLUMN_PLAYER_ONE + " = ?";
+        String[] selectionArgs = { "player_one" };
+
+        Cursor cursor = database.query(
+                GameEntry.TABLE_NAME,
+                projection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                null
+        );*/
 
         // When the enter button is pressed, the score is recorded
         Button enterScore = (Button) findViewById(R.id.enterScoreButton);
         enterScore.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // Read the score input by the user
-                mScoreEditText = (EditText) findViewById(R.id.singleScore);
-                String score = mScoreEditText.getText().toString();
 
-                // if the user input is a integer between 0 and 180, store the integer in a variable
-                if (isInteger(score)) {
-                    mIndividualScore = Integer.parseInt(score);
-                    Log.v("SCORE INPUT VALUE: ", Integer.toString(mIndividualScore));
+                // If it is Player 1's turn, add the score to the ContentValue for Player 1
+                if (mCurrentTurn == 1) {
+                    // Read the score input by the user
+                    mScoreEditText = (EditText) findViewById(R.id.singleScore);
+                    String score = mScoreEditText.getText().toString();
+                    // Reset the score on the user interface to empty
+                    mScoreEditText.setText("");
+                    insertPlayerOneScore(score);
 
-                    // Add the score into the database
+                    // If it is Player 2's turn add the score to the ContentValue for Player 2
+                } else if (mCurrentTurn == 2) {
+                    // Read the score input by the user
+                    mScoreEditText = (EditText) findViewById(R.id.singleScore);
+                    String score = mScoreEditText.getText().toString();
 
-
-                    // if the integer is not a number, a toast is shown to the user
-                } else {
-                    Toast.makeText(getBaseContext(), R.string.validScoreInput,
-                            Toast.LENGTH_LONG).show();
+                    // Reset the score on the user interface to empty
+                    mScoreEditText.setText("");
+                    insertPlayerTwoScore(score);
                 }
             }
         });
+    }
+
+    // Add Player 1 score to the ContentValue variable
+    private void insertPlayerOneScore(String score) {
+        // Check to see if the input is a valid number between 0 and 180
+        if (isInteger(score)) {
+            mPlayerOneIndividualScore = Integer.parseInt(score);
+            Log.v("PLAYER 1 SCORE INPUT: ", Integer.toString(mPlayerOneIndividualScore));
+
+            // Add the score into the ContentValues object in preparation for addition
+            // into the database
+            newInput.put(GameEntry.COLUMN_PLAYER_ONE, Integer.parseInt(score));
+
+            // Set the current turn to Player 2
+            mCurrentTurn = PLAYER_TWO_TURN;
+
+            // if the integer is not a number, a toast is shown to the user
+        } else {
+            Toast.makeText(getBaseContext(), R.string.validScoreInput,
+                    Toast.LENGTH_LONG).show();
+        }
+    }
+
+    // Add Player 2 score to the ContentValue variable and add data in ContentValue object
+    // to the database
+    private void insertPlayerTwoScore(String score) {
+        // Check to see if the input is a valid number between 0 and 180
+        if (isInteger(score)) {
+        mPlayerTwoIndividualScore = Integer.parseInt(score);
+        Log.v("PLAYER 2 SCORE INPUT: ", Integer.toString(mPlayerTwoIndividualScore));
+
+        // Add the score into the ContentValues object in preparation for addition
+        // into the database
+        newInput.put(GameEntry.COLUMN_PLAYER_TWO, Integer.parseInt(score));
+
+        // Set the current turn back to Player 1
+        mCurrentTurn = PLAYER_ONE_TURN;
+
+        // if the integer is not a number, a toast is shown to the user
+        } else {
+            Toast.makeText(getBaseContext(), R.string.validScoreInput,
+                    Toast.LENGTH_LONG).show();
+        }
+
+        // Add the data in the ContentValues object to the database
+        mDatabase.insert(GameEntry.TABLE_NAME, null, newInput);
     }
 
     // A method to check whether the input from the user is a number between 0 and 180

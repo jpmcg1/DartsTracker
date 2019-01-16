@@ -98,25 +98,23 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         enterScore.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Read the score input by the user
+                mScoreEditText = (EditText) findViewById(R.id.singleScore);
+                String score = mScoreEditText.getText().toString();
+
+                // Reset the score on the user interface to empty
+                mScoreEditText.setText("");
 
                 // If it is Player 1's turn, add the score to the ContentValue for Player 1
                 if (mCurrentTurn == 1) {
-                    // Read the score input by the user
-                    mScoreEditText = (EditText) findViewById(R.id.singleScore);
-                    String score = mScoreEditText.getText().toString();
-                    // Reset the score on the user interface to empty
-                    mScoreEditText.setText("");
                     insertPlayerOneScore(score);
 
                     // If it is Player 2's turn add the score to the ContentValue for Player 2
                 } else if (mCurrentTurn == 2) {
-                    // Read the score input by the user
-                    mScoreEditText = (EditText) findViewById(R.id.singleScore);
-                    String score = mScoreEditText.getText().toString();
-
-                    // Reset the score on the user interface to empty
-                    mScoreEditText.setText("");
                     insertPlayerTwoScore(score);
+
+                    // Add the data in the ContentValues object to the database
+                    insertScoresIntoDatabase();
                 }
             }
         });
@@ -163,8 +161,10 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
             Toast.makeText(getBaseContext(), R.string.validScoreInput,
                     Toast.LENGTH_LONG).show();
         }
+    }
 
-        // Add the data in the ContentValues object to the database
+    // Add the data in the ContentValues object to the database
+    private void insertScoresIntoDatabase() {
         mDatabase.insert(GameEntry.TABLE_NAME, null, newInput);
     }
 

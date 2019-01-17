@@ -108,35 +108,65 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
 
                 // If it is Player 1's turn, add the score to the ContentValue for Player 1
                 if (mCurrentTurn == 1) {
-                    if (isTheScoreValid(currentTotalPlayerOne, score)) {
-                        insertPlayerOneScore(score);
-                    } else {
+                    // Check to see if the input will make the score < 2 and return if true
+                    if (!isTheScoreValid(currentTotalPlayerOne, score)) {
                         Toast.makeText(getBaseContext(), R.string.validScoreInput,
                                 Toast.LENGTH_LONG).show();
+                        return;
+
+                        // Check to see if the input is a valid number between 0 and 180 and
+                        // return if not
+                    } else if (!isInteger(score)) {
+                        Toast.makeText(getBaseContext(), R.string.validScoreInput,
+                                Toast.LENGTH_LONG).show();
+                        return;
+
+                        // If the input is valid then insert the score
+                    } else {
+                        insertPlayerOneScore(score);
                     }
+
                     // If it is Player 2's turn add the score to the ContentValue for Player 2
                 } else if (mCurrentTurn == 2) {
-                    if (isTheScoreValid(currentTotalPlayerTwo, score)) {
-                        insertPlayerTwoScore(score);
-                    } else {
+                    // Check to see if the input will make the score < 2 and return if true
+                    if (!isTheScoreValid(currentTotalPlayerTwo, score)) {
                         Toast.makeText(getBaseContext(), R.string.validScoreInput,
                                 Toast.LENGTH_LONG).show();
+                        return;
+
+                        // Check to see if the input is a valid number between 0 and 180 and
+                        // return if not
+                    } else if (!isInteger(score)) {
+                        Toast.makeText(getBaseContext(), R.string.validScoreInput,
+                                Toast.LENGTH_LONG).show();
+                        return;
+
+                        // If the input is valid then insert the score
+                    } else {
+                        insertPlayerTwoScore(score);
                     }
 
                     // Add the data in the ContentValues object to the database
                     insertScoresIntoDatabase();
 
+                    // Calculate the current score for each player after this score insertion into
+                    // database
+                    int newCurrentTotalPlayerOne = currentScore(
+                            GameEntry.COLUMN_PLAYER_ONE, GameEntry.TABLE_NAME);
+                    int newCurrentTotalPlayerTwo = currentScore(
+                            GameEntry.COLUMN_PLAYER_TWO, GameEntry.TABLE_NAME);
+
                     // Update the scores in the UI
-                    mPlayerOneScore = initialScore - currentTotalPlayerOne;
+                    mPlayerOneScore = initialScore - newCurrentTotalPlayerOne;
                     playerOneCurrentScore.setText(Integer.toString(mPlayerOneScore));
-                    mPlayerTwoScore = initialScore - currentTotalPlayerTwo;
+                    mPlayerTwoScore = initialScore - newCurrentTotalPlayerTwo;
                     playerTwoCurrentScore.setText(Integer.toString(mPlayerTwoScore));
                 }
             }
         });
     }
 
-    // Is the score a valid one - in terms of is the new total score 1 or less
+    // Is the score a valid one - if the new total score 1 or less it is invalid and returns false
     private boolean isTheScoreValid(int currentScore, String newScore) {
         int newTotalScore = initialScore - currentScore - Integer.parseInt(newScore);
         if (newTotalScore < 2) {
@@ -147,39 +177,23 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
 
     // Add Player 1 score to the ContentValues object
     private void insertPlayerOneScore(String score) {
-        // Check to see if the input is a valid number between 0 and 180
-        if (isInteger(score)) {
             // Add the score into the ContentValues object in preparation for addition
             // into the database
             newInput.put(GameEntry.COLUMN_PLAYER_ONE, Integer.parseInt(score));
 
             // Set the current turn to Player 2
             mCurrentTurn = PLAYER_TWO_TURN;
-
-            // if the integer is not a valid number, a toast is shown to the user
-        } else {
-            Toast.makeText(getBaseContext(), R.string.validScoreInput,
-                    Toast.LENGTH_LONG).show();
-        }
     }
 
     // Add Player 2 score to the ContentValue variable and add data in ContentValue object
     // to the database
     private void insertPlayerTwoScore(String score) {
-        // Check to see if the input is a valid number between 0 and 180
-        if (isInteger(score)) {
             // Add the score into the ContentValues object in preparation for addition
             // into the database
             newInput.put(GameEntry.COLUMN_PLAYER_TWO, Integer.parseInt(score));
 
             // Set the current turn back to Player 1
             mCurrentTurn = PLAYER_ONE_TURN;
-
-            // if the integer is not a valid number, a toast is shown to the user
-        } else {
-            Toast.makeText(getBaseContext(), R.string.validScoreInput,
-                    Toast.LENGTH_LONG).show();
-        }
     }
 
     // Add the data in the ContentValues object to the database

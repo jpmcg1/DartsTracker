@@ -16,6 +16,12 @@ import android.widget.Toast;
 import com.example.android.dartstracker.data.GameContract.GameEntry;
 import com.example.android.dartstracker.data.GameDbHelper;
 
+// TODO: NEED A 'GAME OVER' AND SOMETHING HAPPENS... at the end of onCreate say 'if
+// currentScore = 0 then blah blah? Or create new method?
+
+// TODO: IF THE SCORE IS TOO BIG AND GOES PAST ZERO, AT THE MINUTE IT GIVES THE PLAYER ANOTHER GO -
+// NEED TO CHANGE THIS
+
 public class TwoPlayerGameActivity extends AppCompatActivity {
 
     // Current score of Player 1
@@ -65,12 +71,6 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         mPlayerOneScore = initialScore;
         mPlayerTwoScore = initialScore;
 
-        // Use a ContentValues object to insert the initial scores into the table
-        /*ContentValues initialValues = new ContentValues();
-        initialValues.put(GameEntry.COLUMN_PLAYER_ONE, initialScore);
-        initialValues.put(GameEntry.COLUMN_PLAYER_TWO, initialScore);
-        mDatabase.insert(GameEntry.TABLE_NAME, null, initialValues);*/
-
         // Set the initial scores in the app interface to 501 for each player
         playerOneCurrentScore = findViewById(R.id.playerOneScore);
         playerOneCurrentScore.setText(Integer.toString(initialScore));
@@ -90,74 +90,77 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
                 mScoreEditText = findViewById(R.id.singleScore);
                 String score = mScoreEditText.getText().toString();
 
-                // Reset the score on the user interface to empty
-                mScoreEditText.setText("");
+                // If the user input is not null, continue
+                if (score != null && !score.isEmpty()) {
+                    // Reset the score on the user interface to empty
+                    mScoreEditText.setText("");
 
-                // Calculate the current score for each player
-                int currentTotalPlayerOne = currentScore(
-                        GameEntry.COLUMN_PLAYER_ONE, GameEntry.TABLE_NAME);
-                int currentTotalPlayerTwo = currentScore(
-                        GameEntry.COLUMN_PLAYER_TWO, GameEntry.TABLE_NAME);
+                    // Calculate the current score for each player
+                    int currentTotalPlayerOne = currentScore(
+                            GameEntry.COLUMN_PLAYER_ONE, GameEntry.TABLE_NAME);
+                    int currentTotalPlayerTwo = currentScore(
+                            GameEntry.COLUMN_PLAYER_TWO, GameEntry.TABLE_NAME);
 
-                // TODO: NEED TO ADD SOMETHING THAT SAYS 'IS THE SCORE ZERO' AND IF YES,
-                // was the last shot a double,  and if yes to both
-                // GAME OVER AND SOMETHING HAPPENS... at the end of onCreate say 'if
-                // currentScore = 0 then blah blah? Or create new method?
+                    // If it is Player 1's turn, add the score to the ContentValue for Player 1
+                    if (mCurrentTurn == 1) {
+                        // Check to see if the input will make the score < 2 and return if true
+                        if (!isTheScoreValid(currentTotalPlayerOne, score)) {
+                            Toast.makeText(getBaseContext(), R.string.validScoreInput,
+                                    Toast.LENGTH_LONG).show();
 
-                // If it is Player 1's turn, add the score to the ContentValue for Player 1
-                if (mCurrentTurn == 1) {
-                    // Check to see if the input will make the score < 2 and return if true
-                    if (!isTheScoreValid(currentTotalPlayerOne, score)) {
-                        Toast.makeText(getBaseContext(), R.string.validScoreInput,
-                                Toast.LENGTH_LONG).show();
+                            // Check to see if the input is a valid number between 0 and 180 and
+                            // return if not
+                        } else if (!isInteger(score)) {
+                            Toast.makeText(getBaseContext(), R.string.validScoreInput,
+                                    Toast.LENGTH_LONG).show();
 
-                        // Check to see if the input is a valid number between 0 and 180 and
-                        // return if not
-                    } else if (!isInteger(score)) {
-                        Toast.makeText(getBaseContext(), R.string.validScoreInput,
-                                Toast.LENGTH_LONG).show();
-
-                        // If the last shot is not a double then carry on to player 2
-                        // This only applies if each of the 3 shots is input individually,
-                        // otherwise there is no way to know if the last shot was a double
-                    } /*else if (!isTheFinalScoreADouble(currentTotalPlayerOne, score)) {
+                            // If the last shot is not a double then carry on to player 2
+                            // This only applies if each of the 3 shots is input individually,
+                            // otherwise there is no way to know if the last shot was a double
+                        } /*else if (!isTheFinalScoreADouble(currentTotalPlayerOne, score)) {
                         Toast.makeText(getBaseContext(), R.string.validFinalShot,
                                 Toast.LENGTH_LONG).show();
 
                         // If the input is valid then insert the score
                     }*/ else {
-                        insertPlayerOneScore(score);
-                    }
+                            insertPlayerOneScore(score);
+                        }
 
-                    // If it is Player 2's turn add the score to the ContentValue for Player 2
-                } else if (mCurrentTurn == 2) {
-                    // Check to see if the input will make the score < 2 and return if true
-                    if (!isTheScoreValid(currentTotalPlayerTwo, score)) {
-                        Toast.makeText(getBaseContext(), R.string.validScoreInput,
-                                Toast.LENGTH_LONG).show();
-                        return;
+                        // If it is Player 2's turn add the score to the ContentValue for Player 2
+                    } else if (mCurrentTurn == 2) {
+                        // Check to see if the input will make the score < 2 and return if true
+                        if (!isTheScoreValid(currentTotalPlayerTwo, score)) {
+                            Toast.makeText(getBaseContext(), R.string.validScoreInput,
+                                    Toast.LENGTH_LONG).show();
+                            return;
 
-                        // Check to see if the input is a valid number between 0 and 180 and
-                        // return if not
-                    } else if (!isInteger(score)) {
-                        Toast.makeText(getBaseContext(), R.string.validScoreInput,
-                                Toast.LENGTH_LONG).show();
-                        return;
+                            // Check to see if the input is a valid number between 0 and 180 and
+                            // return if not
+                        } else if (!isInteger(score)) {
+                            Toast.makeText(getBaseContext(), R.string.validScoreInput,
+                                    Toast.LENGTH_LONG).show();
+                            return;
 
-                        // If the last shot is not a double then carry on to player 2.
-                        // This only applies if each of the 3 shots is input individually,
-                        // otherwise there is no way to know if the last shot was a double
-                    } /*else if (!isTheFinalScoreADouble(currentTotalPlayerTwo, score)) {
+                            // If the last shot is not a double then carry on to player 2.
+                            // This only applies if each of the 3 shots is input individually,
+                            // otherwise there is no way to know if the last shot was a double
+                        } /*else if (!isTheFinalScoreADouble(currentTotalPlayerTwo, score)) {
                         Toast.makeText(getBaseContext(), R.string.validFinalShot,
                                 Toast.LENGTH_LONG).show();
 
                         // If the input is valid then insert the score
                     }*/ else {
-                        insertPlayerTwoScore(score);
+                            insertPlayerTwoScore(score);
+                        }
                     }
-
-                    // Add the data in the ContentValues object to the database
-                    //insertScoresIntoDatabase();
+                    // Add the data in the ContentValues object to the database - this is now
+                    // being done separately in the insertPlayerOneScore(score) and
+                    // insertPlayerTwoScore(score) methods so that the scores in the UI can
+                    // be updated individually.
+                    // insertScoresIntoDatabase();
+                } else {
+                    Toast.makeText(getBaseContext(), R.string.validScoreInput,
+                            Toast.LENGTH_LONG).show();
                 }
             }
         });
@@ -264,6 +267,7 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         }
     }
 
+    // Delets all data in the database but does ot delete the table itself
     private void deleteAllData(String tableName) {
         mDatabase = mDbHelper.getWritableDatabase();
         mDatabase.execSQL("delete from " + tableName);

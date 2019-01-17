@@ -1,6 +1,7 @@
 package com.example.android.dartstracker;
 
 import android.content.ContentValues;
+import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -76,7 +77,8 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         playerTwoCurrentScore = findViewById(R.id.playerTwoScore);
         playerTwoCurrentScore.setText(Integer.toString(initialScore));
 
-        // When you want to clear the table and delete all the entries
+        // When you want to clear the table and delete all the entries, like when the activity
+        // opens up for a new game
         deleteAllData(GameEntry.TABLE_NAME);
 
         // When the enter button is pressed, the score is recorded
@@ -92,14 +94,10 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
                 mScoreEditText.setText("");
 
                 // Calculate the current score for each player
-                int currentTotalPlayerOne = currentScore(GameEntry.COLUMN_PLAYER_ONE, GameEntry.TABLE_NAME);
-                int currentTotalPlayerTwo = currentScore(GameEntry.COLUMN_PLAYER_TWO, GameEntry.TABLE_NAME);
-
-                // TODO: NEED TO CHANGE THESE IF/ELSE TO WHILE LOOPS SO THAT THE SCORE IS INSERTED BEFORE
-                // THE SCORES ARE INSERTED INTO THE DATABASE, NOT JUST A TOAST MESSAGE
-
-                // TODO: ALSO NEED TO DELETE ALL THE DATA IN THE SQL TABLE, OR ELSE THE CODE BELOW
-                // WILL INSTANTLY NOT WORK AS THE CURRENT TOTAL SCORES ARE NOT BETWEEN 0 AND 501
+                int currentTotalPlayerOne = currentScore(
+                        GameEntry.COLUMN_PLAYER_ONE, GameEntry.TABLE_NAME);
+                int currentTotalPlayerTwo = currentScore(
+                        GameEntry.COLUMN_PLAYER_TWO, GameEntry.TABLE_NAME);
 
                 // TODO: NEED TO ADD SOMETHING THAT SAYS 'IS THE SCORE ZERO' AND IF YES,
                 // was the last shot a double,  and if yes to both
@@ -112,17 +110,22 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
                     if (!isTheScoreValid(currentTotalPlayerOne, score)) {
                         Toast.makeText(getBaseContext(), R.string.validScoreInput,
                                 Toast.LENGTH_LONG).show();
-                        return;
 
                         // Check to see if the input is a valid number between 0 and 180 and
                         // return if not
                     } else if (!isInteger(score)) {
                         Toast.makeText(getBaseContext(), R.string.validScoreInput,
                                 Toast.LENGTH_LONG).show();
-                        return;
+
+                        // If the last shot is not a double then carry on to player 2
+                        // This only applies if each of the 3 shots is input individually,
+                        // otherwise there is no way to know if the last shot was a double
+                    } /*else if (!isTheFinalScoreADouble(currentTotalPlayerOne, score)) {
+                        Toast.makeText(getBaseContext(), R.string.validFinalShot,
+                                Toast.LENGTH_LONG).show();
 
                         // If the input is valid then insert the score
-                    } else {
+                    }*/ else {
                         insertPlayerOneScore(score);
                     }
 
@@ -141,35 +144,46 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
                                 Toast.LENGTH_LONG).show();
                         return;
 
+                        // If the last shot is not a double then carry on to player 2.
+                        // This only applies if each of the 3 shots is input individually,
+                        // otherwise there is no way to know if the last shot was a double
+                    } /*else if (!isTheFinalScoreADouble(currentTotalPlayerTwo, score)) {
+                        Toast.makeText(getBaseContext(), R.string.validFinalShot,
+                                Toast.LENGTH_LONG).show();
+
                         // If the input is valid then insert the score
-                    } else {
+                    }*/ else {
                         insertPlayerTwoScore(score);
                     }
 
                     // Add the data in the ContentValues object to the database
-                    insertScoresIntoDatabase();
-
-                    // Calculate the current score for each player after this score insertion into
-                    // database
-                    int newCurrentTotalPlayerOne = currentScore(
-                            GameEntry.COLUMN_PLAYER_ONE, GameEntry.TABLE_NAME);
-                    int newCurrentTotalPlayerTwo = currentScore(
-                            GameEntry.COLUMN_PLAYER_TWO, GameEntry.TABLE_NAME);
-
-                    // Update the scores in the UI
-                    mPlayerOneScore = initialScore - newCurrentTotalPlayerOne;
-                    playerOneCurrentScore.setText(Integer.toString(mPlayerOneScore));
-                    mPlayerTwoScore = initialScore - newCurrentTotalPlayerTwo;
-                    playerTwoCurrentScore.setText(Integer.toString(mPlayerTwoScore));
+                    //insertScoresIntoDatabase();
                 }
             }
         });
     }
 
+    // If the final shot is not a double then return false, whilst also changing
+    // the players turn as in Darts a failed double on a final shot counts as a turn
+    // This only applies if each of the 3 shots is input individually,
+    // otherwise there is no way to know if the last shot was a double
+    private boolean isTheFinalScoreADouble(int currentScore, String newScore) {
+        int newTotalScore = initialScore - currentScore - Integer.parseInt(newScore);
+        if (newTotalScore == 0 && Integer.parseInt(newScore) % 2 != 0) {
+            if (mCurrentTurn == 1) {
+                mCurrentTurn = 2;
+            } else {
+                mCurrentTurn = 1;
+            }
+            return false;
+        }
+        return true;
+    }
+
     // Is the score a valid one - if the new total score 1 or less it is invalid and returns false
     private boolean isTheScoreValid(int currentScore, String newScore) {
         int newTotalScore = initialScore - currentScore - Integer.parseInt(newScore);
-        if (newTotalScore < 2) {
+        if (newTotalScore < 0) {
             return false;
         }
         return true;
@@ -177,23 +191,47 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
 
     // Add Player 1 score to the ContentValues object
     private void insertPlayerOneScore(String score) {
-            // Add the score into the ContentValues object in preparation for addition
-            // into the database
-            newInput.put(GameEntry.COLUMN_PLAYER_ONE, Integer.parseInt(score));
+        // Add the score into the ContentValues object in preparation for addition
+        // into the database
+        newInput.put(GameEntry.COLUMN_PLAYER_ONE, Integer.parseInt(score));
+        // Add the ContentValue to the database
+        mDatabase.insert(GameEntry.TABLE_NAME, null, newInput);
+        // Clear the ContentValue after insertion
+        newInput.clear();
 
-            // Set the current turn to Player 2
-            mCurrentTurn = PLAYER_TWO_TURN;
+        // Calculate the current score for each player after this score insertion into
+        // database
+        int newCurrentTotalPlayerOne = currentScore(
+                GameEntry.COLUMN_PLAYER_ONE, GameEntry.TABLE_NAME);
+        // Update the scores in the UI
+        mPlayerOneScore = initialScore - newCurrentTotalPlayerOne;
+        playerOneCurrentScore.setText(Integer.toString(mPlayerOneScore));
+
+        // Set the current turn to Player 2
+        mCurrentTurn = PLAYER_TWO_TURN;
     }
 
     // Add Player 2 score to the ContentValue variable and add data in ContentValue object
     // to the database
     private void insertPlayerTwoScore(String score) {
-            // Add the score into the ContentValues object in preparation for addition
-            // into the database
-            newInput.put(GameEntry.COLUMN_PLAYER_TWO, Integer.parseInt(score));
+        // Add the score into the ContentValues object in preparation for addition
+        // into the database
+        newInput.put(GameEntry.COLUMN_PLAYER_TWO, Integer.parseInt(score));
+        // Add the ContentValue to the database
+        mDatabase.insert(GameEntry.TABLE_NAME, null, newInput);
+        // Clear the ContentValue after insertion
+        newInput.clear();
 
-            // Set the current turn back to Player 1
-            mCurrentTurn = PLAYER_ONE_TURN;
+        // Calculate the current score for each player after this score insertion into
+        // database
+        int newCurrentTotalPlayerTwo = currentScore(
+                GameEntry.COLUMN_PLAYER_TWO, GameEntry.TABLE_NAME);
+        // Update the scores in the UI
+        mPlayerTwoScore = initialScore - newCurrentTotalPlayerTwo;
+        playerTwoCurrentScore.setText(Integer.toString(mPlayerTwoScore));
+
+        // Set the current turn back to Player 1
+        mCurrentTurn = PLAYER_ONE_TURN;
     }
 
     // Add the data in the ContentValues object to the database

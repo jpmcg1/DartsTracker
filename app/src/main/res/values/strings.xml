@@ -18,4 +18,6 @@
     <string name="enterButton">Enter</string>
 
     <string name="validScoreInput">PLEASE ENTER A VALID NUMBER</string>
+
+    <string name="validFinalShot">YOU MUST FINISH ON A DOUBLE</string>
 </resources>

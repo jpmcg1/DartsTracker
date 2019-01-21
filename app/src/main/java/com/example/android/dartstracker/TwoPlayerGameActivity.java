@@ -1,15 +1,19 @@
 package com.example.android.dartstracker;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -68,7 +72,6 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         ContentValues initialValues = new ContentValues();
         initialValues.put(GameEntry.COLUMN_PLAYER_ONE, 0);
         initialValues.put(GameEntry.COLUMN_PLAYER_TWO, 0);
-
         mDatabase.insert(GameEntry.TABLE_NAME, null, initialValues);
 
         // Set the current turn to Player 1
@@ -83,6 +86,23 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         playerOneCurrentScore.setText(Integer.toString(initialScore));
         playerTwoCurrentScore = findViewById(R.id.playerTwoScore);
         playerTwoCurrentScore.setText(Integer.toString(initialScore));
+
+        mDatabase = mDbHelper.getReadableDatabase();
+
+        String query = "SELECT * FROM " + GameEntry.TABLE_NAME + " ORDER BY " + GameEntry._ID + " DESC LIMIT 1"; // No trailing ';'
+
+        Cursor cursor = mDatabase.rawQuery(query, null);
+
+        String stuff = DatabaseUtils.dumpCursorToString(cursor);
+        Log.d("CURSOR CONTENTS: ", stuff);
+
+        // Create adapter for the scores
+        TwoPlayerGameCursorAdapter adapter = new TwoPlayerGameCursorAdapter(this, cursor);
+
+        LayoutInflater inflater = (LayoutInflater) getBaseContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        LinearLayout mContainer = (LinearLayout) inflater.inflate(R.layout.scores_list_two_players, null);
+        ListView itemListView = (ListView) mContainer.findViewById(R.id.list_two_players);
+        itemListView.setAdapter(adapter);
 
         // When you want to clear the table and delete all the entries, like when the activity
         // opens up for a new game

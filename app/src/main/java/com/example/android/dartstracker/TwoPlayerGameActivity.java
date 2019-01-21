@@ -87,21 +87,28 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         playerTwoCurrentScore = findViewById(R.id.playerTwoScore);
         playerTwoCurrentScore.setText(Integer.toString(initialScore));
 
+        // Query the database in order to get the data
         mDatabase = mDbHelper.getReadableDatabase();
+        // This query just gets the last _ID data
+        // String query = "SELECT * FROM " + GameEntry.TABLE_NAME + " ORDER BY " + GameEntry._ID + " DESC LIMIT 1";
 
-        String query = "SELECT * FROM " + GameEntry.TABLE_NAME + " ORDER BY " + GameEntry._ID + " DESC LIMIT 1"; // No trailing ';'
+        String query = "SELECT * FROM " + GameEntry.TABLE_NAME + ";";
 
+        // A cursor to hold the data from the database in order to send to the adapter
         Cursor cursor = mDatabase.rawQuery(query, null);
 
+        // To check if the cursor has obtained the data from the database
         String stuff = DatabaseUtils.dumpCursorToString(cursor);
         Log.d("CURSOR CONTENTS: ", stuff);
 
         // Create adapter for the scores
         TwoPlayerGameCursorAdapter adapter = new TwoPlayerGameCursorAdapter(this, cursor);
-
+        // Create a layout inflator for the adapter and attach it to the linear layout in
+        // the list xml.
         LayoutInflater inflater = (LayoutInflater) getBaseContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         LinearLayout mContainer = (LinearLayout) inflater.inflate(R.layout.scores_list_two_players, null);
         ListView itemListView = (ListView) mContainer.findViewById(R.id.list_two_players);
+        // Set the adapter to the ListView
         itemListView.setAdapter(adapter);
 
         // When you want to clear the table and delete all the entries, like when the activity

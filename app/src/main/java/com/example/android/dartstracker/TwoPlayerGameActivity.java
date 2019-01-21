@@ -64,6 +64,13 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         // Create the actual database and make it writable in order to add to it
         mDatabase = mDbHelper.getWritableDatabase();
 
+        // Use a ContentValues object to insert the scores into the table
+        ContentValues initialValues = new ContentValues();
+        initialValues.put(GameEntry.COLUMN_PLAYER_ONE, 0);
+        initialValues.put(GameEntry.COLUMN_PLAYER_TWO, 0);
+
+        mDatabase.insert(GameEntry.TABLE_NAME, null, initialValues);
+
         // Set the current turn to Player 1
         mCurrentTurn = PLAYER_ONE_TURN;
 
@@ -79,7 +86,7 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
 
         // When you want to clear the table and delete all the entries, like when the activity
         // opens up for a new game
-        deleteAllData(GameEntry.TABLE_NAME);
+        // deleteAllData(GameEntry.TABLE_NAME);
 
         // When the enter button is pressed, the score is recorded
         Button enterScore = findViewById(R.id.enterScoreButton);
@@ -151,6 +158,22 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
                         // If the input is valid then insert the score
                     }*/ else {
                             insertPlayerTwoScore(score);
+
+                            // Calculate the current score for each player after this score insertion into
+                            // database
+                            int newCurrentTotalPlayerOne = currentScore(
+                                    GameEntry.COLUMN_PLAYER_ONE, GameEntry.TABLE_NAME);
+                            // Update the scores in the UI
+                            mPlayerOneScore = initialScore - newCurrentTotalPlayerOne;
+                            playerOneCurrentScore.setText(Integer.toString(mPlayerOneScore));
+
+                            int newCurrentTotalPlayerTwo = currentScore(
+                                    GameEntry.COLUMN_PLAYER_TWO, GameEntry.TABLE_NAME);
+                            // Update the scores in the UI
+                            mPlayerTwoScore = initialScore - newCurrentTotalPlayerTwo;
+                            playerTwoCurrentScore.setText(Integer.toString(mPlayerTwoScore));
+
+                            insertScoresIntoDatabase();
                         }
                     }
                     // Add the data in the ContentValues object to the database - this is now
@@ -197,18 +220,6 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         // Add the score into the ContentValues object in preparation for addition
         // into the database
         newInput.put(GameEntry.COLUMN_PLAYER_ONE, Integer.parseInt(score));
-        // Add the ContentValue to the database
-        mDatabase.insert(GameEntry.TABLE_NAME, null, newInput);
-        // Clear the ContentValue after insertion
-        newInput.clear();
-
-        // Calculate the current score for each player after this score insertion into
-        // database
-        int newCurrentTotalPlayerOne = currentScore(
-                GameEntry.COLUMN_PLAYER_ONE, GameEntry.TABLE_NAME);
-        // Update the scores in the UI
-        mPlayerOneScore = initialScore - newCurrentTotalPlayerOne;
-        playerOneCurrentScore.setText(Integer.toString(mPlayerOneScore));
 
         // Set the current turn to Player 2
         mCurrentTurn = PLAYER_TWO_TURN;
@@ -220,18 +231,6 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         // Add the score into the ContentValues object in preparation for addition
         // into the database
         newInput.put(GameEntry.COLUMN_PLAYER_TWO, Integer.parseInt(score));
-        // Add the ContentValue to the database
-        mDatabase.insert(GameEntry.TABLE_NAME, null, newInput);
-        // Clear the ContentValue after insertion
-        newInput.clear();
-
-        // Calculate the current score for each player after this score insertion into
-        // database
-        int newCurrentTotalPlayerTwo = currentScore(
-                GameEntry.COLUMN_PLAYER_TWO, GameEntry.TABLE_NAME);
-        // Update the scores in the UI
-        mPlayerTwoScore = initialScore - newCurrentTotalPlayerTwo;
-        playerTwoCurrentScore.setText(Integer.toString(mPlayerTwoScore));
 
         // Set the current turn back to Player 1
         mCurrentTurn = PLAYER_ONE_TURN;

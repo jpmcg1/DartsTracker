@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -44,7 +45,6 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
     private int PLAYER_TWO_TURN = 2;
     private int mCurrentTurn;
 
-
     // ContentValues object to store the input for player 1 and 2 prior to insertion
     // into the database
     private ContentValues newInput = new ContentValues();
@@ -77,9 +77,15 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         playerTwoCurrentScore = findViewById(R.id.playerTwoScore);
         playerTwoCurrentScore.setText(Integer.toString(initialScore));
 
+        // Use a ContentValues object to insert the initial scores into the table
+        ContentValues initialValues = new ContentValues();
+        initialValues.put(GameEntry.COLUMN_PLAYER_ONE, 0);
+        initialValues.put(GameEntry.COLUMN_PLAYER_TWO, 0);
+        mDatabase.insert(GameEntry.TABLE_NAME, null, initialValues);
+
         // When you want to clear the table and delete all the entries, like when the activity
         // opens up for a new game
-        deleteAllData(GameEntry.TABLE_NAME);
+       // deleteAllData(GameEntry.TABLE_NAME);
 
         // When the enter button is pressed, the score is recorded
         Button enterScore = findViewById(R.id.enterScoreButton);
@@ -151,19 +157,53 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
                         // If the input is valid then insert the score
                     }*/ else {
                             insertPlayerTwoScore(score);
+                            // Add the data in the ContentValues object to the database.
+                            insertScoresIntoDatabase();
                         }
                     }
-                    // Add the data in the ContentValues object to the database - this is now
-                    // being done separately in the insertPlayerOneScore(score) and
-                    // insertPlayerTwoScore(score) methods so that the scores in the UI can
-                    // be updated individually.
-                    // insertScoresIntoDatabase();
+
+                    // Calculate the current score for each player after this score insertion into
+                    // database
+                    int newCurrentTotalPlayerOne = currentScore(
+                            GameEntry.COLUMN_PLAYER_ONE, GameEntry.TABLE_NAME);
+                    // Update the scores in the UI
+                    mPlayerOneScore = initialScore - newCurrentTotalPlayerOne;
+                    playerOneCurrentScore.setText(Integer.toString(mPlayerOneScore));
+
+                    // Calculate the current score for each player after this score insertion into
+                    // database
+                    int newCurrentTotalPlayerTwo = currentScore(
+                            GameEntry.COLUMN_PLAYER_TWO, GameEntry.TABLE_NAME);
+                    // Update the scores in the UI
+                    mPlayerTwoScore = initialScore - newCurrentTotalPlayerTwo;
+                    playerTwoCurrentScore.setText(Integer.toString(mPlayerTwoScore));
                 } else {
                     Toast.makeText(getBaseContext(), R.string.validScoreInput,
                             Toast.LENGTH_LONG).show();
                 }
             }
         });
+
+        // mDatabase.execSQL("DROP TABLE IF EXISTS " + GameEntry.TABLE_NAME);
+
+        /*mDatabase = mDbHelper.getReadableDatabase();
+
+        String query = "SELECT * FROM " + GameEntry.TABLE_NAME + " ORDER BY _ID ASC"; // No trailing ';'
+
+        Cursor cursor = mDatabase.rawQuery(query, null);
+
+        if (cursor == null) {
+            Log.d("CURSOR IS EPTY ", "lol");
+        } else {
+            Log.d("CURSOR IS NOT NULL - ", Integer.toString(cursor.getCount()));
+        }
+
+        // Create adapter for the scores
+        TwoPlayerGameCursorAdapter adapter = new TwoPlayerGameCursorAdapter(this, cursor);
+
+        ListView itemListView = (ListView) findViewById(R.id.list_two_players);
+
+        itemListView.setAdapter(adapter);*/
     }
 
     // If the final shot is not a double then return false, whilst also changing
@@ -197,18 +237,10 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         // Add the score into the ContentValues object in preparation for addition
         // into the database
         newInput.put(GameEntry.COLUMN_PLAYER_ONE, Integer.parseInt(score));
-        // Add the ContentValue to the database
+        /*// Add the ContentValue to the database
         mDatabase.insert(GameEntry.TABLE_NAME, null, newInput);
         // Clear the ContentValue after insertion
-        newInput.clear();
-
-        // Calculate the current score for each player after this score insertion into
-        // database
-        int newCurrentTotalPlayerOne = currentScore(
-                GameEntry.COLUMN_PLAYER_ONE, GameEntry.TABLE_NAME);
-        // Update the scores in the UI
-        mPlayerOneScore = initialScore - newCurrentTotalPlayerOne;
-        playerOneCurrentScore.setText(Integer.toString(mPlayerOneScore));
+        newInput.clear();*/
 
         // Set the current turn to Player 2
         mCurrentTurn = PLAYER_TWO_TURN;
@@ -220,18 +252,10 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         // Add the score into the ContentValues object in preparation for addition
         // into the database
         newInput.put(GameEntry.COLUMN_PLAYER_TWO, Integer.parseInt(score));
-        // Add the ContentValue to the database
+        /*// Add the ContentValue to the database
         mDatabase.insert(GameEntry.TABLE_NAME, null, newInput);
         // Clear the ContentValue after insertion
-        newInput.clear();
-
-        // Calculate the current score for each player after this score insertion into
-        // database
-        int newCurrentTotalPlayerTwo = currentScore(
-                GameEntry.COLUMN_PLAYER_TWO, GameEntry.TABLE_NAME);
-        // Update the scores in the UI
-        mPlayerTwoScore = initialScore - newCurrentTotalPlayerTwo;
-        playerTwoCurrentScore.setText(Integer.toString(mPlayerTwoScore));
+        newInput.clear();*/
 
         // Set the current turn back to Player 1
         mCurrentTurn = PLAYER_ONE_TURN;

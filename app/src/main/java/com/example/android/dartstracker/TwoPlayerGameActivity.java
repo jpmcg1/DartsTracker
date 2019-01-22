@@ -89,7 +89,7 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         playerTwoCurrentScore.setText(Integer.toString(initialScore));
 
         // Query the database in order to get the data
-        /*mDatabase = mDbHelper.getReadableDatabase();
+        mDatabase = mDbHelper.getWritableDatabase();
         // This query just gets the last _ID data
         // String query = "SELECT * FROM " + GameEntry.TABLE_NAME + " ORDER BY " + GameEntry._ID + " DESC LIMIT 1";
 
@@ -106,11 +106,14 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         TwoPlayerGameCursorAdapter adapter = new TwoPlayerGameCursorAdapter(this, cursor);
         // Create a layout inflator for the adapter and attach it to the linear layout in
         // the list xml.
-        LayoutInflater inflater = (LayoutInflater) getBaseContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        LinearLayout mContainer = (LinearLayout) inflater.inflate(R.layout.list_item_two_players, null);
-        ListView itemListView = (ListView) mContainer.findViewById(R.id.list_two_players);
+
+        ListView itemListView = (ListView) findViewById(R.id.list_two_players);
         // Set the adapter to the ListView
-        itemListView.setAdapter(adapter);*/
+        itemListView.setAdapter(adapter);
+
+        if (adapter != null) {
+            Log.d("ADAPTER COUNT: ", Integer.toString(adapter.getCount()));
+        }
 
         // When you want to clear the table and delete all the entries, like when the activity
         // opens up for a new game
@@ -213,16 +216,6 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
                     Toast.makeText(getBaseContext(), R.string.validScoreInput,
                             Toast.LENGTH_LONG).show();
                 }
-            }
-        });
-
-        Button checkScores = (Button) findViewById(R.id.individualScoresButton);
-        checkScores.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent twoPlayerScoresIntent = new Intent(view.getContext(),
-                        TwoPlayerScoresListActivity.class);
-                startActivity(twoPlayerScoresIntent);
             }
         });
     }

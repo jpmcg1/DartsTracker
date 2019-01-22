@@ -91,4 +91,12 @@
         android:text="@string/enterButton"
         android:textSize="32dp" />
 
+    <Button
+        android:id="@+id/individualScoresButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="@string/scoresButton"
+        android:textSize="24dp" />
+
 </LinearLayout>

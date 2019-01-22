@@ -2,6 +2,7 @@ package com.example.android.dartstracker;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
@@ -88,28 +89,28 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         playerTwoCurrentScore.setText(Integer.toString(initialScore));
 
         // Query the database in order to get the data
-        mDatabase = mDbHelper.getReadableDatabase();
+        /*mDatabase = mDbHelper.getReadableDatabase();
         // This query just gets the last _ID data
         // String query = "SELECT * FROM " + GameEntry.TABLE_NAME + " ORDER BY " + GameEntry._ID + " DESC LIMIT 1";
 
+        // SQLite query to get all the data from the database
         String query = "SELECT * FROM " + GameEntry.TABLE_NAME + ";";
 
         // A cursor to hold the data from the database in order to send to the adapter
         Cursor cursor = mDatabase.rawQuery(query, null);
 
         // To check if the cursor has obtained the data from the database
-        String stuff = DatabaseUtils.dumpCursorToString(cursor);
-        Log.d("CURSOR CONTENTS: ", stuff);
+        Log.d("CURSOR CONTENTS: ", DatabaseUtils.dumpCursorToString(cursor));
 
         // Create adapter for the scores
         TwoPlayerGameCursorAdapter adapter = new TwoPlayerGameCursorAdapter(this, cursor);
         // Create a layout inflator for the adapter and attach it to the linear layout in
         // the list xml.
         LayoutInflater inflater = (LayoutInflater) getBaseContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        LinearLayout mContainer = (LinearLayout) inflater.inflate(R.layout.scores_list_two_players, null);
+        LinearLayout mContainer = (LinearLayout) inflater.inflate(R.layout.list_item_two_players, null);
         ListView itemListView = (ListView) mContainer.findViewById(R.id.list_two_players);
         // Set the adapter to the ListView
-        itemListView.setAdapter(adapter);
+        itemListView.setAdapter(adapter);*/
 
         // When you want to clear the table and delete all the entries, like when the activity
         // opens up for a new game
@@ -212,6 +213,16 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
                     Toast.makeText(getBaseContext(), R.string.validScoreInput,
                             Toast.LENGTH_LONG).show();
                 }
+            }
+        });
+
+        Button checkScores = (Button) findViewById(R.id.individualScoresButton);
+        checkScores.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent twoPlayerScoresIntent = new Intent(view.getContext(),
+                        TwoPlayerScoresListActivity.class);
+                startActivity(twoPlayerScoresIntent);
             }
         });
     }

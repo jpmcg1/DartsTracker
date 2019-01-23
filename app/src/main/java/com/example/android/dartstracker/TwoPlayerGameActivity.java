@@ -64,6 +64,10 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.two_player_game);
 
+        // When you want to clear the table and delete all the entries, like when the activity
+        // opens up for a new game
+        // deleteAllData();
+
         // Create a database helper object for the game
         mDbHelper = new GameDbHelper(getBaseContext());
         // Create the actual database and make it writable in order to add to it
@@ -88,36 +92,16 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         playerTwoCurrentScore = findViewById(R.id.playerTwoScore);
         playerTwoCurrentScore.setText(Integer.toString(initialScore));
 
-        // Query the database in order to get the data
-        mDatabase = mDbHelper.getWritableDatabase();
-        // This query just gets the last _ID data
-        // String query = "SELECT * FROM " + GameEntry.TABLE_NAME + " ORDER BY " + GameEntry._ID + " DESC LIMIT 1";
-
         // SQLite query to get all the data from the database
         String query = "SELECT * FROM " + GameEntry.TABLE_NAME + ";";
-
         // A cursor to hold the data from the database in order to send to the adapter
         Cursor cursor = mDatabase.rawQuery(query, null);
-
-        // To check if the cursor has obtained the data from the database
-        Log.d("CURSOR CONTENTS: ", DatabaseUtils.dumpCursorToString(cursor));
-
-        // Create adapter for the scores
+        // Create adapter for the scores and put in the cursor with the data from the database
         TwoPlayerGameCursorAdapter adapter = new TwoPlayerGameCursorAdapter(this, cursor);
-        // Create a layout inflator for the adapter and attach it to the linear layout in
-        // the list xml.
-
+        // Create ListView to populate with the adapter
         ListView itemListView = (ListView) findViewById(R.id.list_two_players);
         // Set the adapter to the ListView
         itemListView.setAdapter(adapter);
-
-        if (adapter != null) {
-            Log.d("ADAPTER COUNT: ", Integer.toString(adapter.getCount()));
-        }
-
-        // When you want to clear the table and delete all the entries, like when the activity
-        // opens up for a new game
-        // deleteAllData(GameEntry.TABLE_NAME);
 
         // When the enter button is pressed, the score is recorded
         Button enterScore = findViewById(R.id.enterScoreButton);
@@ -207,11 +191,6 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
                             insertScoresIntoDatabase();
                         }
                     }
-                    // Add the data in the ContentValues object to the database - this is now
-                    // being done separately in the insertPlayerOneScore(score) and
-                    // insertPlayerTwoScore(score) methods so that the scores in the UI can
-                    // be updated individually.
-                    // insertScoresIntoDatabase();
                 } else {
                     Toast.makeText(getBaseContext(), R.string.validScoreInput,
                             Toast.LENGTH_LONG).show();
@@ -219,6 +198,7 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
             }
         });
     }
+
 
     // If the final shot is not a double then return false, whilst also changing
     // the players turn as in Darts a failed double on a final shot counts as a turn
@@ -237,6 +217,7 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         return true;
     }
 
+
     // Is the score a valid one - if the new total score 1 or less it is invalid and returns false
     private boolean isTheScoreValid(int currentScore, String newScore) {
         int newTotalScore = initialScore - currentScore - Integer.parseInt(newScore);
@@ -245,6 +226,7 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         }
         return true;
     }
+
 
     // Add Player 1 score to the ContentValues object
     private void insertPlayerOneScore(String score) {
@@ -255,6 +237,7 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         // Set the current turn to Player 2
         mCurrentTurn = PLAYER_TWO_TURN;
     }
+
 
     // Add Player 2 score to the ContentValue variable and add data in ContentValue object
     // to the database
@@ -267,10 +250,12 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         mCurrentTurn = PLAYER_ONE_TURN;
     }
 
+
     // Add the data in the ContentValues object to the database
     private void insertScoresIntoDatabase() {
         mDatabase.insert(GameEntry.TABLE_NAME, null, newInput);
     }
+
 
     // A method to check whether the input from the user is a number between 0 and 180
     private static boolean isInteger(String string) {
@@ -285,6 +270,7 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         return false;
     }
 
+
     // Method to get the current score
     private int currentScore(String player, String tableName) {
         mDatabase = mDbHelper.getWritableDatabase();
@@ -297,9 +283,11 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         }
     }
 
-    // Delets all data in the database but does ot delete the table itself
-    private void deleteAllData(String tableName) {
+
+    // Deletes all data in the database but does ot delete the table itself
+    private void deleteAllData() {
         mDatabase = mDbHelper.getWritableDatabase();
-        mDatabase.execSQL("delete from " + tableName);
+        //mDatabase.execSQL("delete from " + GameEntry.TABLE_NAME);
+        mDatabase.execSQL("DROP TABLE " + GameEntry.TABLE_NAME);
     }
 }

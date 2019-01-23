@@ -27,6 +27,9 @@ import com.example.android.dartstracker.data.GameDbHelper;
 // TODO: IF THE SCORE IS TOO BIG AND GOES PAST ZERO, AT THE MINUTE IT GIVES THE PLAYER ANOTHER GO -
 // NEED TO CHANGE THIS
 
+// TODO: currently the intial score of zero is added - need to remove but this will affect the
+// score calculations - need to fix this
+
 public class TwoPlayerGameActivity extends AppCompatActivity {
 
     // Current score of Player 1
@@ -41,7 +44,7 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
     private int mPlayerOneScore;
     // The score input by Player 2 is saved in this variable
     private int mPlayerTwoScore;
-    // Initial score
+    // Initial score for the game - can add different options
     private int initialScore = 501;
 
     // Integers to track whose turn is next
@@ -49,8 +52,10 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
     private int PLAYER_TWO_TURN = 2;
     private int mCurrentTurn;
 
+    // String to get all the scores from the SQLite database
     private String databaseQuery = "SELECT * FROM " + GameEntry.TABLE_NAME + ";";
 
+    // CursorAdapter for two player game
     private TwoPlayerGameCursorAdapter mAdapter;
 
     // ContentValues object to store the input for player 1 and 2 prior to insertion
@@ -69,7 +74,7 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
 
         // When you want to clear the table and delete all the entries, like when the activity
         // opens up for a new game
-        // deleteAllData();
+        //deleteAllData();
 
         // Create a database helper object for the game
         mDbHelper = new GameDbHelper(getBaseContext());
@@ -85,15 +90,7 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         // Set the current turn to Player 1
         mCurrentTurn = PLAYER_ONE_TURN;
 
-        // Set the current scores to the initial score defined in the variables
-        mPlayerOneScore = initialScore;
-        mPlayerTwoScore = initialScore;
-
-        // Set the initial scores in the app interface to 501 for each player
-        playerOneCurrentScore = findViewById(R.id.playerOneScore);
-        playerOneCurrentScore.setText(Integer.toString(initialScore));
-        playerTwoCurrentScore = findViewById(R.id.playerTwoScore);
-        playerTwoCurrentScore.setText(Integer.toString(initialScore));
+        setInitialScore();
 
         // A cursor to hold the data from the database in order to send to the adapter
         Cursor cursor = mDatabase.rawQuery(databaseQuery, null);
@@ -137,15 +134,8 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
                             Toast.makeText(getBaseContext(), R.string.validScoreInput,
                                     Toast.LENGTH_LONG).show();
 
-                            // If the last shot is not a double then carry on to player 2
-                            // This only applies if each of the 3 shots is input individually,
-                            // otherwise there is no way to know if the last shot was a double
-                        } /*else if (!isTheFinalScoreADouble(currentTotalPlayerOne, score)) {
-                        Toast.makeText(getBaseContext(), R.string.validFinalShot,
-                                Toast.LENGTH_LONG).show();
-
-                        // If the input is valid then insert the score
-                    }*/ else {
+                            // If the input is valid then insert the score
+                        } else {
                             insertPlayerOneScore(score);
                         }
 
@@ -164,33 +154,25 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
                                     Toast.LENGTH_LONG).show();
                             return;
 
-                            // If the last shot is not a double then carry on to player 2.
-                            // This only applies if each of the 3 shots is input individually,
-                            // otherwise there is no way to know if the last shot was a double
-                        } /*else if (!isTheFinalScoreADouble(currentTotalPlayerTwo, score)) {
-                        Toast.makeText(getBaseContext(), R.string.validFinalShot,
-                                Toast.LENGTH_LONG).show();
-
-                        // If the input is valid then insert the score
-                    }*/ else {
+                            // If the input is valid then insert the score
+                        } else {
                             insertPlayerTwoScore(score);
+                            insertScoresIntoDatabase();
+                            updateAdapter();
 
                             // Calculate the current score for each player after this score insertion into
                             // database
                             int newCurrentTotalPlayerOne = currentScore(
                                     GameEntry.COLUMN_PLAYER_ONE, GameEntry.TABLE_NAME);
-                            // Update the scores in the UI
-                            mPlayerOneScore = initialScore - newCurrentTotalPlayerOne;
-                            playerOneCurrentScore.setText(Integer.toString(mPlayerOneScore));
 
                             int newCurrentTotalPlayerTwo = currentScore(
                                     GameEntry.COLUMN_PLAYER_TWO, GameEntry.TABLE_NAME);
+
                             // Update the scores in the UI
+                            mPlayerOneScore = initialScore - newCurrentTotalPlayerOne;
+                            playerOneCurrentScore.setText(Integer.toString(mPlayerOneScore));
                             mPlayerTwoScore = initialScore - newCurrentTotalPlayerTwo;
                             playerTwoCurrentScore.setText(Integer.toString(mPlayerTwoScore));
-
-                            insertScoresIntoDatabase();
-                            updateAdapter();
                         }
                     }
                 } else {
@@ -200,6 +182,21 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
             }
         });
     }
+
+
+    private void setInitialScore() {
+        // Set the current scores to the initial score defined for this game
+        // (to start with only 501)
+        mPlayerOneScore = initialScore;
+        mPlayerTwoScore = initialScore;
+
+        // Set the initial scores in the app interface to 501 for each player
+        playerOneCurrentScore = findViewById(R.id.playerOneScore);
+        playerOneCurrentScore.setText(Integer.toString(initialScore));
+        playerTwoCurrentScore = findViewById(R.id.playerTwoScore);
+        playerTwoCurrentScore.setText(Integer.toString(initialScore));
+    }
+
 
     // When the scores are input by the user, the cursor gets the new additional info from the
     // database and it is set to the adapter so the new scores are added to the ListView.

@@ -13,7 +13,7 @@
 
     <string name="playerFour">Player 4</string>
 
-    <string name="scoreInput">Input Score</string>
+    <string name="scoreInput">Score</string>
 
     <string name="enterButton">Enter</string>
 
@@ -22,4 +22,8 @@
     <string name="validFinalShot">YOU MUST FINISH ON A DOUBLE</string>
 
     <string name="scoresButton">CHECK SCORES</string>
+
+    <string name="numberOfTurns">TURN</string>
+
+    <string name="individualScores">SCORE</string>
 </resources>

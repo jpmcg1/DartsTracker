@@ -11,6 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -30,6 +31,12 @@ import com.example.android.dartstracker.data.GameDbHelper;
 // TODO: currently the intial score of zero is added - need to remove but this will affect the
 // score calculations - need to fix this
 
+// TODO: need the scores to go in individually - first player can be a content value insertion, but
+// second needs to query the databasse and updat the same row. Otherwise, if player one wins,
+// player 2 will still have to play before it is registered
+
+// TODO: need to tidy up the code
+
 public class TwoPlayerGameActivity extends AppCompatActivity {
 
     // Current score of Player 1
@@ -40,7 +47,7 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
     private EditText mScoreEditText;
 
 
-    // The score input by Player 1 1 is saved in this variable
+    // The score input by Player 1 is saved in this variable
     private int mPlayerOneScore;
     // The score input by Player 2 is saved in this variable
     private int mPlayerTwoScore;
@@ -98,6 +105,7 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         mAdapter = new TwoPlayerGameCursorAdapter(this, cursor);
         // Create ListView to populate with the adapter
         ListView itemListView = (ListView) findViewById(R.id.list_two_players);
+
         // Set the adapter to the ListView
         itemListView.setAdapter(mAdapter);
 

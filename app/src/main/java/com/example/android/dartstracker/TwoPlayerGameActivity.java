@@ -49,6 +49,9 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
     private int PLAYER_TWO_TURN = 2;
     private int mCurrentTurn;
 
+    private String databaseQuery = "SELECT * FROM " + GameEntry.TABLE_NAME + ";";
+
+    private TwoPlayerGameCursorAdapter mAdapter;
 
     // ContentValues object to store the input for player 1 and 2 prior to insertion
     // into the database
@@ -92,16 +95,14 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         playerTwoCurrentScore = findViewById(R.id.playerTwoScore);
         playerTwoCurrentScore.setText(Integer.toString(initialScore));
 
-        // SQLite query to get all the data from the database
-        String query = "SELECT * FROM " + GameEntry.TABLE_NAME + ";";
         // A cursor to hold the data from the database in order to send to the adapter
-        Cursor cursor = mDatabase.rawQuery(query, null);
+        Cursor cursor = mDatabase.rawQuery(databaseQuery, null);
         // Create adapter for the scores and put in the cursor with the data from the database
-        TwoPlayerGameCursorAdapter adapter = new TwoPlayerGameCursorAdapter(this, cursor);
+        mAdapter = new TwoPlayerGameCursorAdapter(this, cursor);
         // Create ListView to populate with the adapter
         ListView itemListView = (ListView) findViewById(R.id.list_two_players);
         // Set the adapter to the ListView
-        itemListView.setAdapter(adapter);
+        itemListView.setAdapter(mAdapter);
 
         // When the enter button is pressed, the score is recorded
         Button enterScore = findViewById(R.id.enterScoreButton);
@@ -189,6 +190,7 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
                             playerTwoCurrentScore.setText(Integer.toString(mPlayerTwoScore));
 
                             insertScoresIntoDatabase();
+                            updateAdapter();
                         }
                     }
                 } else {
@@ -197,6 +199,13 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    // When the scores are input by the user, the cursor gets the new additional info from the
+    // database and it is set to the adapter so the new scores are added to the ListView.
+    private void updateAdapter() {
+        Cursor newCursor = mDatabase.rawQuery(databaseQuery, null);
+        mAdapter.swapCursor(newCursor);
     }
 
 

@@ -28,4 +28,6 @@
     <string name="individualScores">SCORE</string>
 
     <string name="gameIsWon">CONGRATULATIONS!</string>
+
+    <string name="scoreOverZero">TOO HIGH A SCORE!</string>
 </resources>

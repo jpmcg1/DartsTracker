@@ -28,9 +28,6 @@ import com.example.android.dartstracker.data.GameDbHelper;
 // TODO: IF THE SCORE IS TOO BIG AND GOES PAST ZERO, AT THE MINUTE IT GIVES THE PLAYER ANOTHER GO -
 // NEED TO CHANGE THIS
 
-// TODO: currently the intial score of zero is added - need to remove but this will affect the
-// score calculations - need to fix this
-
 // TODO: need the scores to go in individually - first player can be a content value insertion, but
 // second needs to query the databasse and updat the same row. Otherwise, if player one wins,
 // player 2 will still have to play before it is registered
@@ -87,12 +84,6 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         mDbHelper = new GameDbHelper(getBaseContext());
         // Create the actual database and make it writable in order to add to it
         mDatabase = mDbHelper.getWritableDatabase();
-
-        // Use a ContentValues object to insert the scores into the table
-        ContentValues initialValues = new ContentValues();
-        initialValues.put(GameEntry.COLUMN_PLAYER_ONE, 0);
-        initialValues.put(GameEntry.COLUMN_PLAYER_TWO, 0);
-        mDatabase.insert(GameEntry.TABLE_NAME, null, initialValues);
 
         // Set the current turn to Player 1
         mCurrentTurn = PLAYER_ONE_TURN;
@@ -289,11 +280,20 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
     private int currentScore(String player, String tableName) {
         mDatabase = mDbHelper.getWritableDatabase();
         // Access the player's column in the database and add up all the scores
-        try {
-            String sql = "SELECT TOTAL(" + player + ") FROM " + tableName;
-            return (int) DatabaseUtils.longForQuery(mDatabase, sql, null);
-        } finally {
 
+        // If the table is empty, return the current score as 0.
+        // If the table is not empty, calculate the current scire by adding up all the
+        // scores in a column
+        String count = "SELECT COUNT(*) FROM " + tableName;
+        Cursor mcursor = mDatabase.rawQuery(count, null);
+
+        if (mcursor != null) {
+            String sql = "SELECT TOTAL(" + player + ") FROM " + tableName;
+            long total = DatabaseUtils.longForQuery(mDatabase, sql, null);
+            mcursor.close();
+            return (int) total;
+        } else {
+            return 0;
         }
     }
 

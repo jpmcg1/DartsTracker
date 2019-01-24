@@ -26,4 +26,6 @@
     <string name="numberOfTurns">TURN</string>
 
     <string name="individualScores">SCORE</string>
+
+    <string name="gameIsWon">CONGRATULATIONS!</string>
 </resources>

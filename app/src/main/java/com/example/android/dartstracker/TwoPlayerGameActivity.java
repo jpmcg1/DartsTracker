@@ -32,14 +32,6 @@ import com.example.android.dartstracker.data.GameDbHelper;
 // second needs to query the databasse and updat the same row. Otherwise, if player one wins,
 // player 2 will still have to play before it is registered
 
-// TODO: need to tidy up the code
-
-// TODO: need the scores to go in individually - first player can be a content value insertion, but
-// second needs to query the databasse and updat the same row. Otherwise, if player one wins,
-// player 2 will still have to play before it is registered
-
-// TODO: need to tidy up the code
-
 public class TwoPlayerGameActivity extends AppCompatActivity {
 
     // Current score of Player 1
@@ -82,10 +74,6 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.two_player_game);
 
-        // When you want to clear the table and delete all the entries, like when the activity
-        // opens up for a new game
-        //deleteAllData();
-
         // Create a database helper object for the game
         mDbHelper = new GameDbHelper(getBaseContext());
         // Create the actual database and make it writable in order to add to it
@@ -93,6 +81,11 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
 
         // Set the current turn to Player 1
         mCurrentTurn = PLAYER_ONE_TURN;
+
+        // Set the current scores to the initial score defined for this game
+        // (to start with only 501)
+        mPlayerOneScore = initialScore;
+        mPlayerTwoScore = initialScore;
 
         setInitialScore();
 
@@ -165,19 +158,31 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
                             insertScoresIntoDatabase();
                             updateAdapter();
 
-                            // Calculate the current score for each player after this score insertion into
-                            // database
+                            // Calculate the current score for each player after the score
+                            // insertion into database
                             int newCurrentTotalPlayerOne = currentScore(
                                     GameEntry.COLUMN_PLAYER_ONE, GameEntry.TABLE_NAME);
+                            mPlayerOneScore = initialScore - newCurrentTotalPlayerOne;
+                            // If the score is 0, the game is over
+                            if (mPlayerOneScore == 0) {
+                                gameIsWon();
+                                return;
+                            } else {
+                                // Update the scores in the UI
+                                playerOneCurrentScore.setText(Integer.toString(mPlayerOneScore));
+                            }
 
                             int newCurrentTotalPlayerTwo = currentScore(
                                     GameEntry.COLUMN_PLAYER_TWO, GameEntry.TABLE_NAME);
-
-                            // Update the scores in the UI
-                            mPlayerOneScore = initialScore - newCurrentTotalPlayerOne;
-                            playerOneCurrentScore.setText(Integer.toString(mPlayerOneScore));
                             mPlayerTwoScore = initialScore - newCurrentTotalPlayerTwo;
-                            playerTwoCurrentScore.setText(Integer.toString(mPlayerTwoScore));
+                            // If the score is 0, the game is over
+                            if (mPlayerTwoScore == 0) {
+                                gameIsWon();
+                                return;
+                            } else {
+                                // Update the scores in the UI
+                                playerTwoCurrentScore.setText(Integer.toString(mPlayerTwoScore));
+                            }
                         }
                     }
                 } else {
@@ -189,12 +194,16 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
     }
 
 
-    private void setInitialScore() {
-        // Set the current scores to the initial score defined for this game
-        // (to start with only 501)
-        mPlayerOneScore = initialScore;
-        mPlayerTwoScore = initialScore;
+    private void gameIsWon() {
+        Toast.makeText(getBaseContext(), R.string.gameIsWon,
+                Toast.LENGTH_LONG).show();
+        // When you want to clear the table and delete all the entries, like when the activity
+        // opens up for a new game
+        deleteAllData();
+    }
 
+
+    private void setInitialScore() {
         // Set the initial scores in the app interface to 501 for each player
         playerOneCurrentScore = findViewById(R.id.playerOneScore);
         playerOneCurrentScore.setText(Integer.toString(initialScore));
@@ -262,9 +271,10 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
     }
 
 
-    // Add the data in the ContentValues object to the database
+    // Add the data in the ContentValues object to the database and clear the contentValue object
     private void insertScoresIntoDatabase() {
         mDatabase.insert(GameEntry.TABLE_NAME, null, newInput);
+        newInput.clear();
     }
 
 
@@ -308,6 +318,8 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
     private void deleteAllData() {
         mDatabase = mDbHelper.getWritableDatabase();
         //mDatabase.execSQL("delete from " + GameEntry.TABLE_NAME);
-        mDatabase.execSQL("DROP TABLE " + GameEntry.TABLE_NAME);
+        mDatabase.execSQL("delete from " + GameEntry.TABLE_NAME);
+        // Reset the _ID to 1
+        mDatabase.execSQL("delete from sqlite_sequence where name = 'games'");
     }
 }

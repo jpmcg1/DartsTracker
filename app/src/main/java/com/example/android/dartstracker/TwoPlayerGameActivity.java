@@ -34,6 +34,12 @@ import com.example.android.dartstracker.data.GameDbHelper;
 
 // TODO: need to tidy up the code
 
+// TODO: need the scores to go in individually - first player can be a content value insertion, but
+// second needs to query the databasse and updat the same row. Otherwise, if player one wins,
+// player 2 will still have to play before it is registered
+
+// TODO: need to tidy up the code
+
 public class TwoPlayerGameActivity extends AppCompatActivity {
 
     // Current score of Player 1

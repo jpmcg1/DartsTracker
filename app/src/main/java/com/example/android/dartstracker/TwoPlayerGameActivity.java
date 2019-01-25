@@ -67,6 +67,8 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
 
     // String to get all the scores from the SQLite database
     private String mDatabaseQuery = "SELECT * FROM " + GameEntry.TABLE_NAME + ";";
+    // Score input by the user
+    private String mScore;
 
     // CursorAdapter for two player game
     private TwoPlayerGameCursorAdapter mAdapter;
@@ -120,10 +122,10 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
             public void onClick(View view) {
                 // Read the score input by the user
                 mScoreEditText = findViewById(R.id.singleScore);
-                String score = mScoreEditText.getText().toString();
+                mScore = mScoreEditText.getText().toString();
 
                 // If the user input is not null, continue
-                if (score != null && !score.isEmpty()) {
+                if (mScore != null && !mScore.isEmpty()) {
                     // Reset the score on the user interface to empty
                     mScoreEditText.setText("");
 
@@ -133,10 +135,18 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
                     int currentTotalPlayerTwo = currentScore(
                             GameEntry.COLUMN_PLAYER_TWO, GameEntry.TABLE_NAME);
 
-                    // If it is Player 1's turn, add the score to the ContentValue for Player 1
+                    // If it is Player 1's turn...
                     if (mCurrentTurn == 1) {
-                        // Check to see if the input will make the score < 2 and return if true
-                        if (!isTheScoreValid(currentTotalPlayerOne, score)) {
+                        // Check to see if the game is over
+                        // i.e. if the initial socre (501) minus the current total (451) is
+                        // equal to the input score (50), then the total is 0 and then game
+                        // is won.
+                        if (mInitialScore - currentTotalPlayerOne == Integer.parseInt(mScore)) {
+                            gameIsWon();
+                            return;
+                        }
+                        // Check to see if the input will make the score < 0 and return if true
+                        if (!isTheScoreValid(currentTotalPlayerOne, mScore)) {
                             Toast.makeText(getBaseContext(), R.string.scoreOverZero,
                                     Toast.LENGTH_LONG).show();
                             return;
@@ -144,21 +154,29 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
 
                         // Check to see if the input is a valid number between 0 and 180 and
                         // return if not
-                        if (!isInteger(score)) {
+                        if (!isInteger(mScore)) {
                             Toast.makeText(getBaseContext(), R.string.validScoreInput,
                                     Toast.LENGTH_LONG).show();
                             return;
                         }
-                        // If the input is valid then insert the score
-                        insertPlayerOneScore(score);
+                        // If the input is valid then insert the score to the ContentValue object
+                        insertPlayerOneScore(mScore);
                         // Change the headings to show it is player 2's turn
                         alterHeadingStyle(PLAYER_TWO_TURN);
 
 
-                        // If it is Player 2's turn add the score to the ContentValue for Player 2
+                        // If it is Player 2's turn...
                     } else if (mCurrentTurn == 2) {
-                        // Check to see if the input will make the score < 20 and return if true
-                        if (!isTheScoreValid(currentTotalPlayerTwo, score)) {
+                        // Check to see if the game is over
+                        // i.e. if the initial socre (501) minus the current total (451) is
+                        // equal to the input score (50), then the total is 0 and then game
+                        // is won.
+                        if (mInitialScore - currentTotalPlayerTwo == Integer.parseInt(mScore)) {
+                            gameIsWon();
+                            return;
+                        }
+                        // Check to see if the input will make the score < 0 and return if true
+                        if (!isTheScoreValid(currentTotalPlayerTwo, mScore)) {
                             Toast.makeText(getBaseContext(), R.string.scoreOverZero,
                                     Toast.LENGTH_LONG).show();
                             return;
@@ -166,51 +184,40 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
 
                         // Check to see if the input is a valid number between 0 and 180 and
                         // return if not
-                        if (!isInteger(score)) {
+                        if (!isInteger(mScore)) {
                             Toast.makeText(getBaseContext(), R.string.validScoreInput,
                                     Toast.LENGTH_LONG).show();
                             return;
                         }
 
-                        // If the input is valid then insert the score
-                        insertPlayerTwoScore(score);
-                        insertScoresIntoDatabase();
-                        updateAdapter();
-
+                        // If the input is valid then insert the score to the ContentValue object
+                        insertPlayerTwoScore(mScore);
                         // Change the heading to show it is player 1's turn again
                         alterHeadingStyle(PLAYER_ONE_TURN);
 
+                        // Insert the ContentValue object into the SQLite database
+                        insertScoresIntoDatabase();
+                        // Update the adapter to show the up to date list of scores in the UI
+                        updateAdapter();
+
                         // Calculate the current score for each player after the score
-                        // insertion into database
+                        // insertion into database and set the new score to the UI
                         int newCurrentTotalPlayerOne = currentScore(
                                 GameEntry.COLUMN_PLAYER_ONE, GameEntry.TABLE_NAME);
                         mPlayerOneScore = mInitialScore - newCurrentTotalPlayerOne;
-                        // If the score is 0, the game is over
-                        if (mPlayerOneScore == 0) {
-                            gameIsWon();
-                            return;
-                        } else {
-                            // Update the scores in the UI
-                            mPlayerOneCurrentScore.setText(Integer.toString(mPlayerOneScore));
-                        }
-
+                        mPlayerOneCurrentScore.setText(Integer.toString(mPlayerOneScore));
                         int newCurrentTotalPlayerTwo = currentScore(
                                 GameEntry.COLUMN_PLAYER_TWO, GameEntry.TABLE_NAME);
                         mPlayerTwoScore = mInitialScore - newCurrentTotalPlayerTwo;
-                        // If the score is 0, the game is over
-                        if (mPlayerTwoScore == 0) {
-                            gameIsWon();
-                            return;
-                        } else {
-                            // Update the scores in the UI
-                            mPlayerTwoCurrentScore.setText(Integer.toString(mPlayerTwoScore));
-                        }
+                        mPlayerTwoCurrentScore.setText(Integer.toString(mPlayerTwoScore));
                     }
 
                 } else {
                     Toast.makeText(getBaseContext(), R.string.validScoreInput,
                             Toast.LENGTH_LONG).show();
                 }
+                // Reset the score to null
+                mScore = null;
             }
         });
     }
@@ -247,18 +254,6 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         }
     }
 
-
-    // In the pop-up that appears after the game is won, clicking the 'replay' button will
-    // start a new game in this activity by recalling the OnCreate method
-    private void replayGame() {
-        Button replayButton = (Button) findViewById(R.id.replayButton);
-        replayButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                recreate();
-            }
-        });
-    }
 
     // When the game is won, a pop up appears on the activity with Buttons to replay the game
     // or to go back to the main screen
@@ -300,6 +295,7 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
                 popupWindow.dismiss();
                 // The data from the previous game is deleted
                 deleteAllData();
+                recreate();
             }
         });
     }

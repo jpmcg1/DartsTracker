@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -26,11 +27,10 @@ import com.example.android.dartstracker.data.GameDbHelper;
 
 // TODO: IF THE SCORE IS TOO BIG AND GOES PAST ZERO, AT THE MINUTE IT GIVES THE PLAYER ANOTHER GO -
 // NEED TO CHANGE THIS
-// TODO: need the scores to go in individually - first player can be a content value insertion, but
-// second needs to query the databasse and updat the same row. Otherwise, if player one wins,
-// player 2 will still have to play before it is registered
 
 // TODO: Add a reset button on the top of the activity UI
+
+// TOTO: Add a button to the top to select the inital score
 
 public class TwoPlayerGameActivity extends AppCompatActivity {
 
@@ -52,13 +52,12 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
     // Button on the popup to replay a two player game after game is won
     private Button mReplayButton;
 
-
+    // Initial score for the game - can add different options
+    private int mInitialScore = 501;
     // The score input by Player 1 is saved in this variable
     private int mPlayerOneScore;
     // The score input by Player 2 is saved in this variable
     private int mPlayerTwoScore;
-    // Initial score for the game - can add different options
-    private int mInitialScore = 501;
 
     // Integers to track whose turn is next
     private int PLAYER_ONE_TURN = 1;
@@ -92,17 +91,13 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         // Create the actual database and make it writable in order to add to it
         mDatabase = mDbHelper.getWritableDatabase();
 
-        // deleteAllData();
-
         // Set the current turn to Player 1
         mCurrentTurn = PLAYER_ONE_TURN;
 
-        // Set the current scores to the initial score defined for this game
-        // (to start with only 501)
-        mPlayerOneScore = mInitialScore;
-        mPlayerTwoScore = mInitialScore;
+        // Set the scores to the UI - upon creation it will be the initial score,
+        // but if the user leaves and returns to the game it should show the current score
+        setScore();
 
-        setInitialScore();
         alterHeadingStyle(PLAYER_ONE_TURN);
 
         // A cursor to hold the data from the database in order to send to the adapter
@@ -222,6 +217,12 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         });
     }
 
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        int savedPlayerOneScore = savedInstanceState.getInt("mPlayerOneScore");
+        Log.d("VALUE OF SAVED NO: ", Integer.toString(savedPlayerOneScore));
+    }
+
 
     // Method to alter the heading and score in the xml file, depending on whose turn it is
     private void alterHeadingStyle(int currentTurn) {
@@ -306,12 +307,19 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
     }
 
 
-    private void setInitialScore() {
+    private void setScore() {
         // Set the initial scores in the app interface to 501 for each player
         mPlayerOneCurrentScore = findViewById(R.id.playerOneScore);
-        mPlayerOneCurrentScore.setText(Integer.toString(mInitialScore));
         mPlayerTwoCurrentScore = findViewById(R.id.playerTwoScore);
-        mPlayerTwoCurrentScore.setText(Integer.toString(mInitialScore));
+
+        int newCurrentTotalPlayerOne = currentScore(
+                GameEntry.COLUMN_PLAYER_ONE, GameEntry.TABLE_NAME);
+        mPlayerOneScore = mInitialScore - newCurrentTotalPlayerOne;
+        mPlayerOneCurrentScore.setText(Integer.toString(mPlayerOneScore));
+        int newCurrentTotalPlayerTwo = currentScore(
+                GameEntry.COLUMN_PLAYER_TWO, GameEntry.TABLE_NAME);
+        mPlayerTwoScore = mInitialScore - newCurrentTotalPlayerTwo;
+        mPlayerTwoCurrentScore.setText(Integer.toString(mPlayerTwoScore));
     }
 
 

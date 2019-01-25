@@ -32,6 +32,9 @@ import com.example.android.dartstracker.data.GameDbHelper;
 
 // TOTO: Add a button to the top to select the inital score
 
+// TODO: The player turn needs to be remembered if the activity is changed, also the
+// heading fonts
+
 public class TwoPlayerGameActivity extends AppCompatActivity {
 
     // Current score of Player 1
@@ -144,6 +147,11 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
                         if (!isTheScoreValid(currentTotalPlayerOne, mScore)) {
                             Toast.makeText(getBaseContext(), R.string.scoreOverZero,
                                     Toast.LENGTH_LONG).show();
+                            // If the score goes over 0, then the player loses their turn and the
+                            // score "0" is put into the ContentValue
+                            mCurrentTurn = 2;
+                            alterHeadingStyle(PLAYER_TWO_TURN);
+                            insertPlayerOneScore("0");
                             return;
                         }
 
@@ -174,6 +182,15 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
                         if (!isTheScoreValid(currentTotalPlayerTwo, mScore)) {
                             Toast.makeText(getBaseContext(), R.string.scoreOverZero,
                                     Toast.LENGTH_LONG).show();
+                            // If the score goes over 0, then the player loses their turn and the
+                            // score "0" is put into the ContentValue
+                            mCurrentTurn = 1;
+                            alterHeadingStyle(PLAYER_ONE_TURN);
+                            insertPlayerTwoScore("0");
+                            // Insert the ContentValue object into the SQLite database
+                            insertScoresIntoDatabase();
+                            // Update the adapter to show the up to date list of scores in the UI
+                            updateAdapter();
                             return;
                         }
 
@@ -349,13 +366,10 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
     }
 
 
-    // Is the score a valid one - if the new total score 1 or less it is invalid and returns false
+    // Is the score a valid one - if the new total score is less than zero it returns false
     private boolean isTheScoreValid(int currentScore, String newScore) {
         int newTotalScore = mInitialScore - currentScore - Integer.parseInt(newScore);
-        if (newTotalScore < 0) {
-            return false;
-        }
-        return true;
+        return (newTotalScore > -1);
     }
 
 

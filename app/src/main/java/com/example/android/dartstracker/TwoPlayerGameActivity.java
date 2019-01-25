@@ -12,6 +12,8 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -24,9 +26,6 @@ import android.widget.Toast;
 
 import com.example.android.dartstracker.data.GameContract.GameEntry;
 import com.example.android.dartstracker.data.GameDbHelper;
-
-// TODO: IF THE SCORE IS TOO BIG AND GOES PAST ZERO, AT THE MINUTE IT GIVES THE PLAYER ANOTHER GO -
-// NEED TO CHANGE THIS
 
 // TODO: Add a reset button on the top of the activity UI
 
@@ -234,10 +233,30 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         });
     }
 
-    public void onRestoreInstanceState(Bundle savedInstanceState) {
+    /*public void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         int savedPlayerOneScore = savedInstanceState.getInt("mPlayerOneScore");
         Log.d("VALUE OF SAVED NO: ", Integer.toString(savedPlayerOneScore));
+    }*/
+
+
+    // Inflate the menu options from the res/menu/menu_reset.xml file
+    // This will add the menu items to the app bar
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_reset, menu);
+        return true;
+    }
+
+
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_reset:
+                // If the reset button is clicked, start the game again
+                deleteAllData();
+                recreate();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
 

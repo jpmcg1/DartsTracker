@@ -1,15 +1,14 @@
 package com.example.android.dartstracker;
 
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.text.Layout;
-import android.util.Log;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -36,14 +35,22 @@ import com.example.android.dartstracker.data.GameDbHelper;
 public class TwoPlayerGameActivity extends AppCompatActivity {
 
     // Current score of Player 1
-    private TextView playerOneCurrentScore;
+    private TextView mPlayerOneCurrentScore;
     // Current score of Player 2
-    private TextView playerTwoCurrentScore;
+    private TextView mPlayerTwoCurrentScore;
     // Edit text field for the score inputted by the user
     private EditText mScoreEditText;
+    // Player 1 title which will change depending on whose turn it is
+    private TextView mPlayerOneTitle;
+    // Player 2 title which will change depending on whose turn it is
+    private TextView mPlayerTwoTitle;
 
+    // Activity linear layout
     private LinearLayout mLinearLayout;
-    private Button returnToMainActivityButton;
+    // Button on the pop up to return to the main activity after game is over
+    private Button mReturnToMainActivityButton;
+    // Button on the popup to replay a two player game after game is won
+    private Button mReplayButton;
 
 
     // The score input by Player 1 is saved in this variable
@@ -51,7 +58,7 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
     // The score input by Player 2 is saved in this variable
     private int mPlayerTwoScore;
     // Initial score for the game - can add different options
-    private int initialScore = 501;
+    private int mInitialScore = 501;
 
     // Integers to track whose turn is next
     private int PLAYER_ONE_TURN = 1;
@@ -59,7 +66,7 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
     private int mCurrentTurn;
 
     // String to get all the scores from the SQLite database
-    private String databaseQuery = "SELECT * FROM " + GameEntry.TABLE_NAME + ";";
+    private String mDatabaseQuery = "SELECT * FROM " + GameEntry.TABLE_NAME + ";";
 
     // CursorAdapter for two player game
     private TwoPlayerGameCursorAdapter mAdapter;
@@ -90,13 +97,14 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
 
         // Set the current scores to the initial score defined for this game
         // (to start with only 501)
-        mPlayerOneScore = initialScore;
-        mPlayerTwoScore = initialScore;
+        mPlayerOneScore = mInitialScore;
+        mPlayerTwoScore = mInitialScore;
 
         setInitialScore();
+        alterHeadingStyle(PLAYER_ONE_TURN);
 
         // A cursor to hold the data from the database in order to send to the adapter
-        Cursor cursor = mDatabase.rawQuery(databaseQuery, null);
+        Cursor cursor = mDatabase.rawQuery(mDatabaseQuery, null);
         // Create adapter for the scores and put in the cursor with the data from the database
         mAdapter = new TwoPlayerGameCursorAdapter(this, cursor);
         // Create ListView to populate with the adapter
@@ -143,6 +151,8 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
                         }
                         // If the input is valid then insert the score
                         insertPlayerOneScore(score);
+                        // Change the headings to show it is player 2's turn
+                        alterHeadingStyle(PLAYER_TWO_TURN);
 
 
                         // If it is Player 2's turn add the score to the ContentValue for Player 2
@@ -167,30 +177,33 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
                         insertScoresIntoDatabase();
                         updateAdapter();
 
+                        // Change the heading to show it is player 1's turn again
+                        alterHeadingStyle(PLAYER_ONE_TURN);
+
                         // Calculate the current score for each player after the score
                         // insertion into database
                         int newCurrentTotalPlayerOne = currentScore(
                                 GameEntry.COLUMN_PLAYER_ONE, GameEntry.TABLE_NAME);
-                        mPlayerOneScore = initialScore - newCurrentTotalPlayerOne;
+                        mPlayerOneScore = mInitialScore - newCurrentTotalPlayerOne;
                         // If the score is 0, the game is over
                         if (mPlayerOneScore == 0) {
                             gameIsWon();
                             return;
                         } else {
                             // Update the scores in the UI
-                            playerOneCurrentScore.setText(Integer.toString(mPlayerOneScore));
+                            mPlayerOneCurrentScore.setText(Integer.toString(mPlayerOneScore));
                         }
 
                         int newCurrentTotalPlayerTwo = currentScore(
                                 GameEntry.COLUMN_PLAYER_TWO, GameEntry.TABLE_NAME);
-                        mPlayerTwoScore = initialScore - newCurrentTotalPlayerTwo;
+                        mPlayerTwoScore = mInitialScore - newCurrentTotalPlayerTwo;
                         // If the score is 0, the game is over
                         if (mPlayerTwoScore == 0) {
                             gameIsWon();
                             return;
                         } else {
                             // Update the scores in the UI
-                            playerTwoCurrentScore.setText(Integer.toString(mPlayerTwoScore));
+                            mPlayerTwoCurrentScore.setText(Integer.toString(mPlayerTwoScore));
                         }
                     }
 
@@ -200,6 +213,38 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+
+    // Method to alter the heading and score in the xml file, depending on whose turn it is
+    private void alterHeadingStyle(int currentTurn) {
+        if (currentTurn == 1) {
+            // Set the player 1 title to Bold to indicate it is player one's turn
+            mPlayerOneTitle = (TextView) findViewById(R.id.playerOneTitle);
+            mPlayerOneTitle.setTypeface(null, Typeface.BOLD);
+            mPlayerOneTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 40f);
+            mPlayerOneCurrentScore.setTextSize(TypedValue.COMPLEX_UNIT_SP, 40f);
+
+            // Set the player 2 title to normal
+            mPlayerTwoTitle = (TextView) findViewById(R.id.playerTwoTitle);
+            mPlayerTwoTitle.setTypeface(null, Typeface.NORMAL);
+            mPlayerTwoTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 32f);
+            mPlayerTwoCurrentScore.setTextSize(TypedValue.COMPLEX_UNIT_SP, 32f);
+        }
+
+        if (currentTurn == 2) {
+            // Set the player 2 title to Bold to indicate it is player one's turn
+            mPlayerTwoTitle = (TextView) findViewById(R.id.playerTwoTitle);
+            mPlayerTwoTitle.setTypeface(null, Typeface.BOLD);
+            mPlayerTwoTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 40f);
+            mPlayerTwoCurrentScore.setTextSize(TypedValue.COMPLEX_UNIT_SP, 40f);
+
+            // Set the player 1 title to normal
+            mPlayerOneTitle = (TextView) findViewById(R.id.playerOneTitle);
+            mPlayerOneTitle.setTypeface(null, Typeface.NORMAL);
+            mPlayerOneTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 32f);
+            mPlayerOneCurrentScore.setTextSize(TypedValue.COMPLEX_UNIT_SP, 32f);
+        }
     }
 
 
@@ -232,8 +277,8 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         popupWindow.showAtLocation(mLinearLayout, Gravity.CENTER, 0,0);
 
         // Add a close button onto the popup
-        returnToMainActivityButton = (Button) popupView.findViewById(R.id.returnToMainActivityButton);
-        returnToMainActivityButton.setOnClickListener(new View.OnClickListener() {
+        mReturnToMainActivityButton = (Button) popupView.findViewById(R.id.returnToMainActivityButton);
+        mReturnToMainActivityButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // When the close button is pressed, the pop up disappears
@@ -243,6 +288,18 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
                 // Return to main activity
                 Intent returnToMainActivityIntent = new Intent(view.getContext(), MainActivity.class);
                 startActivity(returnToMainActivityIntent);
+            }
+        });
+
+        // Add a replay button to replay a two player game
+        mReplayButton = (Button) popupView.findViewById(R.id.replayButton);
+        mReplayButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // When the close button is pressed, the pop up disappears
+                popupWindow.dismiss();
+                // The data from the previous game is deleted
+                deleteAllData();
             }
         });
     }
@@ -255,17 +312,17 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
 
     private void setInitialScore() {
         // Set the initial scores in the app interface to 501 for each player
-        playerOneCurrentScore = findViewById(R.id.playerOneScore);
-        playerOneCurrentScore.setText(Integer.toString(initialScore));
-        playerTwoCurrentScore = findViewById(R.id.playerTwoScore);
-        playerTwoCurrentScore.setText(Integer.toString(initialScore));
+        mPlayerOneCurrentScore = findViewById(R.id.playerOneScore);
+        mPlayerOneCurrentScore.setText(Integer.toString(mInitialScore));
+        mPlayerTwoCurrentScore = findViewById(R.id.playerTwoScore);
+        mPlayerTwoCurrentScore.setText(Integer.toString(mInitialScore));
     }
 
 
     // When the scores are input by the user, the cursor gets the new additional info from the
     // database and it is set to the adapter so the new scores are added to the ListView.
     private void updateAdapter() {
-        Cursor newCursor = mDatabase.rawQuery(databaseQuery, null);
+        Cursor newCursor = mDatabase.rawQuery(mDatabaseQuery, null);
         mAdapter.swapCursor(newCursor);
     }
 
@@ -275,7 +332,7 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
     // This only applies if each of the 3 shots is input individually,
     // otherwise there is no way to know if the last shot was a double
     private boolean isTheFinalScoreADouble(int currentScore, String newScore) {
-        int newTotalScore = initialScore - currentScore - Integer.parseInt(newScore);
+        int newTotalScore = mInitialScore - currentScore - Integer.parseInt(newScore);
         if (newTotalScore == 0 && Integer.parseInt(newScore) % 2 != 0) {
             if (mCurrentTurn == 1) {
                 mCurrentTurn = 2;
@@ -290,7 +347,7 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
 
     // Is the score a valid one - if the new total score 1 or less it is invalid and returns false
     private boolean isTheScoreValid(int currentScore, String newScore) {
-        int newTotalScore = initialScore - currentScore - Integer.parseInt(newScore);
+        int newTotalScore = mInitialScore - currentScore - Integer.parseInt(newScore);
         if (newTotalScore < 0) {
             return false;
         }

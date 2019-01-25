@@ -25,8 +25,6 @@ import android.widget.Toast;
 import com.example.android.dartstracker.data.GameContract.GameEntry;
 import com.example.android.dartstracker.data.GameDbHelper;
 
-// TODO: NEED A 'GAME OVER' AND SOMETHING HAPPENS
-
 // TODO: IF THE SCORE IS TOO BIG AND GOES PAST ZERO, AT THE MINUTE IT GIVES THE PLAYER ANOTHER GO -
 // NEED TO CHANGE THIS
 // TODO: need the scores to go in individually - first player can be a content value insertion, but
@@ -45,7 +43,7 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
     private EditText mScoreEditText;
 
     private LinearLayout mLinearLayout;
-    private Button closePopupButton;
+    private Button returnToMainActivityButton;
 
 
     // The score input by Player 1 is saved in this variable
@@ -217,28 +215,40 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         });
     }
 
+    // When the game is won, a pop up appears on the activity with Buttons to replay the game
+    // or to go back to the main screen
     private void showPopup() {
-        mLinearLayout = (LinearLayout) findViewById(R.id.linear_layout_two_player);
         LayoutInflater inflater = (LayoutInflater) this.getSystemService(LAYOUT_INFLATER_SERVICE);
+
+        // The xml file for the pop up
         View popupView = inflater.inflate(R.layout.game_finish_pop_up, null);
-        closePopupButton = (Button) popupView.findViewById(R.id.closePopupButton);
-        final PopupWindow popupWindow = new PopupWindow(popupView, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        // Create the pop up and set it the xml View
+        final PopupWindow popupWindow = new PopupWindow(popupView,
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+
+        // The activity over which the pop up will appear is
+        mLinearLayout = (LinearLayout) findViewById(R.id.linear_layout_two_player);
+        // Show the pop up over the activity
         popupWindow.showAtLocation(mLinearLayout, Gravity.CENTER, 0,0);
-        closePopupButton.setOnClickListener(new View.OnClickListener() {
+
+        // Add a close button onto the popup
+        returnToMainActivityButton = (Button) popupView.findViewById(R.id.returnToMainActivityButton);
+        returnToMainActivityButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // When the close button is pressed, the pop up disappears
                 popupWindow.dismiss();
+                // The data from the previous game is deleted
+                deleteAllData();
+                // Return to main activity
+                Intent returnToMainActivityIntent = new Intent(view.getContext(), MainActivity.class);
+                startActivity(returnToMainActivityIntent);
             }
         });
     }
 
 
     private void gameIsWon() {
-        Toast.makeText(getBaseContext(), R.string.gameIsWon,
-                Toast.LENGTH_LONG).show();
-        // When you want to clear the table and delete all the entries, like when the activity
-        // opens up for a new game
-        deleteAllData();
         showPopup();
     }
 

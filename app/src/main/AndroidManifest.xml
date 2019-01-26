@@ -24,14 +24,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MainActivity"/>
         </activity>
-        <activity
-            android:name=".TwoPlayerScoresListActivity"
-            android:parentActivityName=".TwoPlayerGameActivity">
-            <!-- Parent activity meta-data to support 4.0 and lower -->
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".MainActivity"/>
-        </activity>
     </application>
 
 </manifest>

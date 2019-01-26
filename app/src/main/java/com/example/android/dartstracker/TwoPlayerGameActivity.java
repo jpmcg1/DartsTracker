@@ -8,7 +8,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -27,14 +26,15 @@ import android.widget.Toast;
 import com.example.android.dartstracker.data.GameContract.GameEntry;
 import com.example.android.dartstracker.data.GameDbHelper;
 
-// TODO: Add a reset button on the top of the activity UI
-
 // TOTO: Add a button to the top to select the inital score
 
 // TODO: The player turn needs to be remembered if the activity is changed, also the
 // heading fonts
 
 public class TwoPlayerGameActivity extends AppCompatActivity {
+
+    // Initial score for the game - value to from the main activity intent
+    int mInitialScore;
 
     // Current score of Player 1
     private TextView mPlayerOneCurrentScore;
@@ -49,13 +49,12 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
 
     // Activity linear layout
     private LinearLayout mLinearLayout;
-    // Button on the pop up to return to the main activity after game is over
+
+    // Button on the game over pop up to return to the main activity after game is over
     private Button mReturnToMainActivityButton;
-    // Button on the popup to replay a two player game after game is won
+    // Button on the game over popup to replay a two player game after game is won
     private Button mReplayButton;
 
-    // Initial score for the game - can add different options
-    private int mInitialScore = 501;
     // The score input by Player 1 is saved in this variable
     private int mPlayerOneScore;
     // The score input by Player 2 is saved in this variable
@@ -87,6 +86,9 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.two_player_game);
+
+        int userInputInitialScore = getIntent().getIntExtra(MainActivity.mInitialValue, -1);
+        mInitialScore = userInputInitialScore;
 
         // Create a database helper object for the game
         mDbHelper = new GameDbHelper(getBaseContext());
@@ -139,7 +141,7 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
                         // equal to the input score (50), then the total is 0 and then game
                         // is won.
                         if (mInitialScore - currentTotalPlayerOne == Integer.parseInt(mScore)) {
-                            gameIsWon();
+                            showGameOverPopup();
                             return;
                         }
                         // Check to see if the input will make the score < 0 and return if true
@@ -174,7 +176,7 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
                         // equal to the input score (50), then the total is 0 and then game
                         // is won.
                         if (mInitialScore - currentTotalPlayerTwo == Integer.parseInt(mScore)) {
-                            gameIsWon();
+                            showGameOverPopup();
                             return;
                         }
                         // Check to see if the input will make the score < 0 and return if true
@@ -255,9 +257,13 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
                 deleteAllData();
                 recreate();
                 return true;
+            /*case R.id.action_choose_starting_score:
+                // If the starting score icon is clicked, show pop up with different options
+                //setInitialScorePopup();*/
         }
         return super.onOptionsItemSelected(item);
     }
+
 
 
     // Method to alter the heading and score in the xml file, depending on whose turn it is
@@ -294,7 +300,7 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
 
     // When the game is won, a pop up appears on the activity with Buttons to replay the game
     // or to go back to the main screen
-    private void showPopup() {
+    private void showGameOverPopup() {
         LayoutInflater inflater = (LayoutInflater) this.getSystemService(LAYOUT_INFLATER_SERVICE);
 
         // The xml file for the pop up
@@ -332,14 +338,10 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
                 popupWindow.dismiss();
                 // The data from the previous game is deleted
                 deleteAllData();
+                // Recreate the activity
                 recreate();
             }
         });
-    }
-
-
-    private void gameIsWon() {
-        showPopup();
     }
 
 
@@ -459,7 +461,7 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
 
 
     // Deletes all data in the database but does ot delete the table itself
-    private void deleteAllData() {
+    public void deleteAllData() {
         mDatabase = mDbHelper.getWritableDatabase();
         //mDatabase.execSQL("delete from " + GameEntry.TABLE_NAME);
         mDatabase.execSQL("delete from " + GameEntry.TABLE_NAME);

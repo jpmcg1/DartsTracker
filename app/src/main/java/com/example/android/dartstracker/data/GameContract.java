@@ -36,6 +36,7 @@ public final class GameContract {
         public static final String _ID = BaseColumns._ID;
         public static final String COLUMN_PLAYER_ONE = "player_one";
         public static final String COLUMN_PLAYER_TWO = "player_two";
+        public static final String COLUMN_PLAYER_THREE = "player_three";
     }
 
 }

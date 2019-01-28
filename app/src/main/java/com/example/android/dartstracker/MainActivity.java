@@ -42,6 +42,30 @@ public class MainActivity extends AppCompatActivity {
                 setInitialScorePopup();
             }
         });
+
+        // If the user chooses a 3 player game
+        final Button threePlayerGame = (Button) findViewById(R.id.threePlayers);
+        threePlayerGame.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Set the number of players to 3
+                mNumberOfPlayers = 3;
+                // Initiate the pop up for the user to choose the starting score for the game
+                setInitialScorePopup();
+            }
+        });
+
+        /*// If the user chooses a 4 player game
+        final Button fourPlayerGame = (Button) findViewById(R.id.fourPlayers);
+        twoPlayerGame.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Set the number of players to 4
+                mNumberOfPlayers = 4;
+                // Initiate the pop up for the user to choose the starting score for the game
+                setInitialScorePopup();
+            }
+        });*/
     }
 
 
@@ -72,6 +96,15 @@ public class MainActivity extends AppCompatActivity {
                 Intent twoPlayerIntent = new Intent(view.getContext(), TwoPlayerGameActivity.class);
                 twoPlayerIntent.putExtra(mInitialValue, mThreeHundredAndOne);
                 startActivity(twoPlayerIntent);
+            }
+        }
+
+        if (mNumberOfPlayers == 3) {
+            // If the user chooses the game to start with a score of 301
+            if (view.getId() == R.id.set_score_301) {
+                Intent threePlayerIntent = new Intent(view.getContext(), ThreePlayerGameActivity.class);
+                threePlayerIntent.putExtra(mInitialValue, mThreeHundredAndOne);
+                startActivity(threePlayerIntent);
             }
         }
     }

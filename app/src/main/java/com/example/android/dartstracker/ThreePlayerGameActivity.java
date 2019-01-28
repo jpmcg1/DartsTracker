@@ -26,12 +26,12 @@ import android.widget.Toast;
 import com.example.android.dartstracker.data.GameContract.GameEntry;
 import com.example.android.dartstracker.data.GameDbHelper;
 
-// Add an undo button to the drop down menu incase the user input is incorrect
+// TOTO: Add a button to the top to select the inital score
 
 // TODO: The player turn needs to be remembered if the activity is changed, also the
 // heading fonts
 
-public class TwoPlayerGameActivity extends AppCompatActivity {
+public class ThreePlayerGameActivity extends AppCompatActivity {
 
     // Initial score for the game - value to from the main activity intent
     int mInitialScore;
@@ -40,13 +40,16 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
     private TextView mPlayerOneCurrentScore;
     // Current score of Player 2
     private TextView mPlayerTwoCurrentScore;
+    // Current score of Player 3
+    private TextView mPlayerThreeCurrentScore;
     // Edit text field for the score inputted by the user
     private EditText mScoreEditText;
     // Player 1 title which will change depending on whose turn it is
     private TextView mPlayerOneTitle;
     // Player 2 title which will change depending on whose turn it is
     private TextView mPlayerTwoTitle;
-
+    // Player 3 title which will change depending on whose turn it is
+    private TextView mPlayerThreeTitle;
     // Activity linear layout
     private LinearLayout mLinearLayout;
 
@@ -59,10 +62,13 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
     private int mPlayerOneScore;
     // The score input by Player 2 is saved in this variable
     private int mPlayerTwoScore;
+    // The score input by Player 3 is saved in this variable
+    private int mPlayerThreeScore;
 
     // Integers to track whose turn is next
     private int PLAYER_ONE_TURN = 1;
     private int PLAYER_TWO_TURN = 2;
+    private int PLAYER_THREE_TURN = 3;
     private int mCurrentTurn;
 
     // String to get all the scores from the SQLite database
@@ -71,7 +77,7 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
     private String mScore;
 
     // CursorAdapter for two player game
-    private TwoPlayerGameCursorAdapter mAdapter;
+    private ThreePlayerGameCursorAdapter mAdapter;
 
     // ContentValues object to store the input for player 1 and 2 prior to insertion
     // into the database
@@ -85,7 +91,7 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.two_player_game);
+        setContentView(R.layout.three_player_game);
 
         int userInputInitialScore = getIntent().getIntExtra(MainActivity.mInitialValue, -1);
         mInitialScore = userInputInitialScore;
@@ -107,9 +113,9 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         // A cursor to hold the data from the database in order to send to the adapter
         Cursor cursor = mDatabase.rawQuery(mDatabaseQuery, null);
         // Create adapter for the scores and put in the cursor with the data from the database
-        mAdapter = new TwoPlayerGameCursorAdapter(this, cursor);
+        mAdapter = new ThreePlayerGameCursorAdapter(this, cursor);
         // Create ListView to populate with the adapter
-        ListView itemListView = (ListView) findViewById(R.id.list_two_players);
+        ListView itemListView = (ListView) findViewById(R.id.list_three_players);
 
         // Set the adapter to the ListView
         itemListView.setAdapter(mAdapter);
@@ -133,6 +139,8 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
                             GameEntry.COLUMN_PLAYER_ONE, GameEntry.TABLE_NAME);
                     int currentTotalPlayerTwo = currentScore(
                             GameEntry.COLUMN_PLAYER_TWO, GameEntry.TABLE_NAME);
+                    int currentTotalPlayerThree = currentScore(
+                            GameEntry.COLUMN_PLAYER_THREE, GameEntry.TABLE_NAME);
 
                     // If it is Player 1's turn...
                     if (mCurrentTurn == 1) {
@@ -185,9 +193,44 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
                                     Toast.LENGTH_LONG).show();
                             // If the score goes over 0, then the player loses their turn and the
                             // score "0" is put into the ContentValue
+                            mCurrentTurn = 3;
+                            alterHeadingStyle(PLAYER_THREE_TURN);
+                            insertPlayerTwoScore("0");
+                            return;
+                        }
+
+                        // Check to see if the input is a valid number between 0 and 180 and
+                        // return if not
+                        if (!isInteger(mScore)) {
+                            Toast.makeText(getBaseContext(), R.string.validScoreInput,
+                                    Toast.LENGTH_LONG).show();
+                            return;
+                        }
+                        // If the input is valid then insert the score to the ContentValue object
+                        insertPlayerTwoScore(mScore);
+                        // Change the headings to show it is player 2's turn
+                        alterHeadingStyle(PLAYER_THREE_TURN);
+
+
+                        // If it is Player 3's turn...
+                    } else if (mCurrentTurn == 3) {
+                        // Check to see if the game is over
+                        // i.e. if the initial socre (501) minus the current total (451) is
+                        // equal to the input score (50), then the total is 0 and then game
+                        // is won.
+                        if (mInitialScore - currentTotalPlayerThree == Integer.parseInt(mScore)) {
+                            showGameOverPopup();
+                            return;
+                        }
+                        // Check to see if the input will make the score < 0 and return if true
+                        if (!isTheScoreValid(currentTotalPlayerThree, mScore)) {
+                            Toast.makeText(getBaseContext(), R.string.scoreOverZero,
+                                    Toast.LENGTH_LONG).show();
+                            // If the score goes over 0, then the player loses their turn and the
+                            // score "0" is put into the ContentValue
                             mCurrentTurn = 1;
                             alterHeadingStyle(PLAYER_ONE_TURN);
-                            insertPlayerTwoScore("0");
+                            insertPlayerThreeScore("0");
                             // Insert the ContentValue object into the SQLite database
                             insertScoresIntoDatabase();
                             // Update the adapter to show the up to date list of scores in the UI
@@ -204,7 +247,7 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
                         }
 
                         // If the input is valid then insert the score to the ContentValue object
-                        insertPlayerTwoScore(mScore);
+                        insertPlayerThreeScore(mScore);
                         // Change the heading to show it is player 1's turn again
                         alterHeadingStyle(PLAYER_ONE_TURN);
 
@@ -223,6 +266,10 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
                                 GameEntry.COLUMN_PLAYER_TWO, GameEntry.TABLE_NAME);
                         mPlayerTwoScore = mInitialScore - newCurrentTotalPlayerTwo;
                         mPlayerTwoCurrentScore.setText(Integer.toString(mPlayerTwoScore));
+                        int newCurrentTotalPlayerThree = currentScore(
+                                GameEntry.COLUMN_PLAYER_THREE, GameEntry.TABLE_NAME);
+                        mPlayerThreeScore = mInitialScore - newCurrentTotalPlayerThree;
+                        mPlayerThreeCurrentScore.setText(Integer.toString(mPlayerThreeScore));
                     }
 
                 } else {
@@ -280,6 +327,12 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
             mPlayerTwoTitle.setTypeface(null, Typeface.NORMAL);
             mPlayerTwoTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 32f);
             mPlayerTwoCurrentScore.setTextSize(TypedValue.COMPLEX_UNIT_SP, 32f);
+
+            // Set the player 3 title to normal
+            mPlayerThreeTitle = (TextView) findViewById(R.id.playerThreeTitle);
+            mPlayerThreeTitle.setTypeface(null, Typeface.NORMAL);
+            mPlayerThreeTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 32f);
+            mPlayerThreeCurrentScore.setTextSize(TypedValue.COMPLEX_UNIT_SP, 32f);
         }
 
         if (currentTurn == 2) {
@@ -294,6 +347,32 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
             mPlayerOneTitle.setTypeface(null, Typeface.NORMAL);
             mPlayerOneTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 32f);
             mPlayerOneCurrentScore.setTextSize(TypedValue.COMPLEX_UNIT_SP, 32f);
+
+            // Set the player 3 title to normal
+            mPlayerThreeTitle = (TextView) findViewById(R.id.playerTwoTitle);
+            mPlayerThreeTitle.setTypeface(null, Typeface.NORMAL);
+            mPlayerThreeTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 32f);
+            mPlayerThreeCurrentScore.setTextSize(TypedValue.COMPLEX_UNIT_SP, 32f);
+        }
+
+        if (currentTurn == 3) {
+            // Set the player 3 title to Bold to indicate it is player one's turn
+            mPlayerThreeTitle = (TextView) findViewById(R.id.playerThreeTitle);
+            mPlayerThreeTitle.setTypeface(null, Typeface.BOLD);
+            mPlayerThreeTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 40f);
+            mPlayerThreeCurrentScore.setTextSize(TypedValue.COMPLEX_UNIT_SP, 40f);
+
+            // Set the player 1 title to normal
+            mPlayerOneTitle = (TextView) findViewById(R.id.playerOneTitle);
+            mPlayerOneTitle.setTypeface(null, Typeface.NORMAL);
+            mPlayerOneTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 32f);
+            mPlayerOneCurrentScore.setTextSize(TypedValue.COMPLEX_UNIT_SP, 32f);
+
+            // Set the player 2 title to normal
+            mPlayerTwoTitle = (TextView) findViewById(R.id.playerTwoTitle);
+            mPlayerTwoTitle.setTypeface(null, Typeface.NORMAL);
+            mPlayerTwoTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 32f);
+            mPlayerTwoCurrentScore.setTextSize(TypedValue.COMPLEX_UNIT_SP, 32f);
         }
     }
 
@@ -310,7 +389,7 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
         // The activity over which the pop up will appear is
-        mLinearLayout = (LinearLayout) findViewById(R.id.linear_layout_two_player);
+        mLinearLayout = (LinearLayout) findViewById(R.id.linear_layout_three_player);
         // Show the pop up over the activity
         popupWindow.showAtLocation(mLinearLayout, Gravity.CENTER, 0,0);
 
@@ -349,6 +428,7 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         // Set the initial scores in the app interface to 501 for each player
         mPlayerOneCurrentScore = findViewById(R.id.playerOneScore);
         mPlayerTwoCurrentScore = findViewById(R.id.playerTwoScore);
+        mPlayerThreeCurrentScore = findViewById(R.id.playerThreeScore);
 
         int newCurrentTotalPlayerOne = currentScore(
                 GameEntry.COLUMN_PLAYER_ONE, GameEntry.TABLE_NAME);
@@ -358,6 +438,10 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
                 GameEntry.COLUMN_PLAYER_TWO, GameEntry.TABLE_NAME);
         mPlayerTwoScore = mInitialScore - newCurrentTotalPlayerTwo;
         mPlayerTwoCurrentScore.setText(Integer.toString(mPlayerTwoScore));
+        int newCurrentTotalPlayerThree = currentScore(
+                GameEntry.COLUMN_PLAYER_THREE, GameEntry.TABLE_NAME);
+        mPlayerThreeScore = mInitialScore - newCurrentTotalPlayerThree;
+        mPlayerThreeCurrentScore.setText(Integer.toString(mPlayerThreeScore));
     }
 
 
@@ -413,6 +497,15 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         newInput.put(GameEntry.COLUMN_PLAYER_TWO, Integer.parseInt(score));
 
         // Set the current turn back to Player 1
+        mCurrentTurn = PLAYER_THREE_TURN;
+    }
+
+    private void insertPlayerThreeScore(String score) {
+        // Add the score into the ContentValues object in preparation for addition
+        // into the database
+        newInput.put(GameEntry.COLUMN_PLAYER_THREE, Integer.parseInt(score));
+
+        // Set the current turn back to Player 1
         mCurrentTurn = PLAYER_ONE_TURN;
     }
 
@@ -447,12 +540,12 @@ public class TwoPlayerGameActivity extends AppCompatActivity {
         // If the table is not empty, calculate the current scire by adding up all the
         // scores in a column
         String count = "SELECT COUNT(*) FROM " + tableName;
-        Cursor mcursor = mDatabase.rawQuery(count, null);
+        Cursor cursor = mDatabase.rawQuery(count, null);
 
-        if (mcursor != null) {
+        if (cursor != null) {
             String sql = "SELECT TOTAL(" + player + ") FROM " + tableName;
             long total = DatabaseUtils.longForQuery(mDatabase, sql, null);
-            mcursor.close();
+            cursor.close();
             return (int) total;
         } else {
             return 0;

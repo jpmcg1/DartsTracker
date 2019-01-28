@@ -32,7 +32,8 @@ public class GameDbHelper extends SQLiteOpenHelper {
         String CREATE_TABLE = "CREATE TABLE " + GameEntry.TABLE_NAME + " ("
                 + GameEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + GameEntry.COLUMN_PLAYER_ONE + " INTEGER, "
-                + GameEntry.COLUMN_PLAYER_TWO + " INTEGER);";
+                + GameEntry.COLUMN_PLAYER_TWO + " INTEGER, "
+                + GameEntry.COLUMN_PLAYER_THREE + " INTEGER);";
 
         // Create the database
         db.execSQL(CREATE_TABLE);

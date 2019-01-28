@@ -1,19 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".EditorActivity">
 
     <item
         android:id="@+id/action_reset"
-        android:title="Reset Game">
+        android:title="@string/resetGame">
 
     </item>
 
     <item
-        android:id="@+id/action_choose_starting_score"
-        android:title="Starting Score">
+        android:id="@+id/action_undo"
+        android:title="@string/undo">
 
     </item>
 

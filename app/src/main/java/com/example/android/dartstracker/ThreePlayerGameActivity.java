@@ -26,10 +26,6 @@ import android.widget.Toast;
 import com.example.android.dartstracker.data.GameContract.GameEntry;
 import com.example.android.dartstracker.data.GameDbHelper;
 
-// TOTO: Add a button to the top to select the inital score
-
-// TODO: The player turn needs to be remembered if the activity is changed, also the
-// heading fonts
 
 public class ThreePlayerGameActivity extends AppCompatActivity {
 
@@ -72,7 +68,7 @@ public class ThreePlayerGameActivity extends AppCompatActivity {
     private int mCurrentTurn;
 
     // String to get all the scores from the SQLite database
-    private String mDatabaseQuery = "SELECT * FROM " + GameEntry.TABLE_NAME + ";";
+    private String mDatabaseQueryGetScores = "SELECT * FROM " + GameEntry.TABLE_NAME + ";";
     // Score input by the user
     private String mScore;
 
@@ -93,13 +89,14 @@ public class ThreePlayerGameActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.three_player_game);
 
-        int userInputInitialScore = getIntent().getIntExtra(MainActivity.mInitialValue, -1);
-        mInitialScore = userInputInitialScore;
+        mInitialScore = getIntent().getIntExtra(MainActivity.mInitialValue, -1);
 
         // Create a database helper object for the game
         mDbHelper = new GameDbHelper(getBaseContext());
         // Create the actual database and make it writable in order to add to it
         mDatabase = mDbHelper.getWritableDatabase();
+        // Clear any existing data in the database
+        deleteAllData();
 
         // Set the current turn to Player 1
         mCurrentTurn = PLAYER_ONE_TURN;
@@ -111,7 +108,7 @@ public class ThreePlayerGameActivity extends AppCompatActivity {
         alterHeadingStyle(PLAYER_ONE_TURN);
 
         // A cursor to hold the data from the database in order to send to the adapter
-        Cursor cursor = mDatabase.rawQuery(mDatabaseQuery, null);
+        Cursor cursor = mDatabase.rawQuery(mDatabaseQueryGetScores, null);
         // Create adapter for the scores and put in the cursor with the data from the database
         mAdapter = new ThreePlayerGameCursorAdapter(this, cursor);
         // Create ListView to populate with the adapter
@@ -319,19 +316,19 @@ public class ThreePlayerGameActivity extends AppCompatActivity {
             // Set the player 1 title to Bold to indicate it is player one's turn
             mPlayerOneTitle = (TextView) findViewById(R.id.playerOneTitle);
             mPlayerOneTitle.setTypeface(null, Typeface.BOLD);
-            mPlayerOneTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 40f);
+            mPlayerOneTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 32f);
             mPlayerOneCurrentScore.setTextSize(TypedValue.COMPLEX_UNIT_SP, 40f);
 
             // Set the player 2 title to normal
             mPlayerTwoTitle = (TextView) findViewById(R.id.playerTwoTitle);
             mPlayerTwoTitle.setTypeface(null, Typeface.NORMAL);
-            mPlayerTwoTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 32f);
+            mPlayerTwoTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 28f);
             mPlayerTwoCurrentScore.setTextSize(TypedValue.COMPLEX_UNIT_SP, 32f);
 
             // Set the player 3 title to normal
             mPlayerThreeTitle = (TextView) findViewById(R.id.playerThreeTitle);
             mPlayerThreeTitle.setTypeface(null, Typeface.NORMAL);
-            mPlayerThreeTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 32f);
+            mPlayerThreeTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 28f);
             mPlayerThreeCurrentScore.setTextSize(TypedValue.COMPLEX_UNIT_SP, 32f);
         }
 
@@ -339,19 +336,19 @@ public class ThreePlayerGameActivity extends AppCompatActivity {
             // Set the player 2 title to Bold to indicate it is player one's turn
             mPlayerTwoTitle = (TextView) findViewById(R.id.playerTwoTitle);
             mPlayerTwoTitle.setTypeface(null, Typeface.BOLD);
-            mPlayerTwoTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 40f);
+            mPlayerTwoTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 32f);
             mPlayerTwoCurrentScore.setTextSize(TypedValue.COMPLEX_UNIT_SP, 40f);
 
             // Set the player 1 title to normal
             mPlayerOneTitle = (TextView) findViewById(R.id.playerOneTitle);
             mPlayerOneTitle.setTypeface(null, Typeface.NORMAL);
-            mPlayerOneTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 32f);
+            mPlayerOneTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 28f);
             mPlayerOneCurrentScore.setTextSize(TypedValue.COMPLEX_UNIT_SP, 32f);
 
             // Set the player 3 title to normal
-            mPlayerThreeTitle = (TextView) findViewById(R.id.playerTwoTitle);
+            mPlayerThreeTitle = (TextView) findViewById(R.id.playerThreeTitle);
             mPlayerThreeTitle.setTypeface(null, Typeface.NORMAL);
-            mPlayerThreeTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 32f);
+            mPlayerThreeTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 28f);
             mPlayerThreeCurrentScore.setTextSize(TypedValue.COMPLEX_UNIT_SP, 32f);
         }
 
@@ -359,19 +356,19 @@ public class ThreePlayerGameActivity extends AppCompatActivity {
             // Set the player 3 title to Bold to indicate it is player one's turn
             mPlayerThreeTitle = (TextView) findViewById(R.id.playerThreeTitle);
             mPlayerThreeTitle.setTypeface(null, Typeface.BOLD);
-            mPlayerThreeTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 40f);
+            mPlayerThreeTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 32f);
             mPlayerThreeCurrentScore.setTextSize(TypedValue.COMPLEX_UNIT_SP, 40f);
 
             // Set the player 1 title to normal
             mPlayerOneTitle = (TextView) findViewById(R.id.playerOneTitle);
             mPlayerOneTitle.setTypeface(null, Typeface.NORMAL);
-            mPlayerOneTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 32f);
+            mPlayerOneTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 28f);
             mPlayerOneCurrentScore.setTextSize(TypedValue.COMPLEX_UNIT_SP, 32f);
 
             // Set the player 2 title to normal
             mPlayerTwoTitle = (TextView) findViewById(R.id.playerTwoTitle);
             mPlayerTwoTitle.setTypeface(null, Typeface.NORMAL);
-            mPlayerTwoTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 32f);
+            mPlayerTwoTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 28f);
             mPlayerTwoCurrentScore.setTextSize(TypedValue.COMPLEX_UNIT_SP, 32f);
         }
     }
@@ -448,7 +445,7 @@ public class ThreePlayerGameActivity extends AppCompatActivity {
     // When the scores are input by the user, the cursor gets the new additional info from the
     // database and it is set to the adapter so the new scores are added to the ListView.
     private void updateAdapter() {
-        Cursor newCursor = mDatabase.rawQuery(mDatabaseQuery, null);
+        Cursor newCursor = mDatabase.rawQuery(mDatabaseQueryGetScores, null);
         mAdapter.swapCursor(newCursor);
     }
 

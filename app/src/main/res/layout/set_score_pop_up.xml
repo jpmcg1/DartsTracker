@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:background="@color/colourWhite"
-    android:gravity="center"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_gravity="center"
+    android:background="@color/colourWhite"
+    android:gravity="center"
     android:orientation="vertical"
     android:padding="10dp">
 
@@ -13,34 +13,37 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:textSize="30sp"
         android:gravity="center"
-        android:text="Which Score?" />
+        android:text="@string/whichStartingScorePopupTitle"
+        android:textSize="30sp" />
 
     <Button
         android:id="@+id/set_score_301"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="301"
-        android:onClick="openNewActivity"/>
+        android:onClick="openNewActivity"
+        android:text="@string/score301" />
 
     <Button
         android:id="@+id/set_score_501"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="501" />
+        android:onClick="openNewActivity"
+        android:text="@string/score501" />
 
     <Button
         android:id="@+id/set_score_701"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="701" />
+        android:onClick="openNewActivity"
+        android:text="@string/score701" />
 
     <Button
         android:id="@+id/set_score_cancel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="cancel" />
+        android:onClick="cancelPopup"
+        android:text="@string/cancelButtonStartingScorePopup" />
 
 </LinearLayout>

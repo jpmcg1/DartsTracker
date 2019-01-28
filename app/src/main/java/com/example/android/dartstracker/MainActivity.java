@@ -21,10 +21,14 @@ public class MainActivity extends AppCompatActivity {
     // Starting score for the game - updated depending on the user's choice of players
     private int mNumberOfPlayers;
 
+    PopupWindow mPopupWindow;
+
     // The starting values for the game chosen by the user - this is passed via the intent to the
     // appropriate activity. The string variable is the key for passing the int via the intent.
     public static final String mInitialValue = "Initial Value";
     public static final int mThreeHundredAndOne = 301;
+    public static final int mFiveHundredAndOne = 501;
+    public static final int mSevenHundredAndOne = 701;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,9 +59,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        /*// If the user chooses a 4 player game
+        // If the user chooses a 4 player game
         final Button fourPlayerGame = (Button) findViewById(R.id.fourPlayers);
-        twoPlayerGame.setOnClickListener(new View.OnClickListener() {
+        fourPlayerGame.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // Set the number of players to 4
@@ -65,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
                 // Initiate the pop up for the user to choose the starting score for the game
                 setInitialScorePopup();
             }
-        });*/
+        });
     }
 
 
@@ -76,15 +80,23 @@ public class MainActivity extends AppCompatActivity {
         LayoutInflater inflater = (LayoutInflater) this.getSystemService(LAYOUT_INFLATER_SERVICE);
 
         // The xml file for the pop up
-        View scorePopupView = inflater.inflate(R.layout.set_score_pop_up, null);
+        final View scorePopupView = inflater.inflate(R.layout.set_score_pop_up, null);
         // Create the pop up and set it the xml View
-        final PopupWindow popupWindow = new PopupWindow(scorePopupView,
+        mPopupWindow = new PopupWindow(scorePopupView,
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
         // The activity over which the pop up will appear
         mLinearLayout = (LinearLayout) findViewById(R.id.mainActivity);
         // Show the pop up over the activity
-        popupWindow.showAtLocation(mLinearLayout, Gravity.CENTER, 0, 0);
+        mPopupWindow.showAtLocation(mLinearLayout, Gravity.CENTER, 0, 0);
+    }
+
+
+    // Close the pop up window
+    public void cancelPopup(View view) {
+        if (view.getId() == R.id.set_score_cancel) {
+            mPopupWindow.dismiss();
+        }
     }
 
     // Opens the appropriate activity depending on the user's choice of number of players.
@@ -97,6 +109,18 @@ public class MainActivity extends AppCompatActivity {
                 twoPlayerIntent.putExtra(mInitialValue, mThreeHundredAndOne);
                 startActivity(twoPlayerIntent);
             }
+            // If the user chooses the game to start with a score of 501
+            else if (view.getId() == R.id.set_score_501) {
+                Intent twoPlayerIntent = new Intent(view.getContext(), TwoPlayerGameActivity.class);
+                twoPlayerIntent.putExtra(mInitialValue, mFiveHundredAndOne);
+                startActivity(twoPlayerIntent);
+            }
+            // If the user chooses the game to start with a score of 701
+             else if (view.getId() == R.id.set_score_701) {
+                Intent twoPlayerIntent = new Intent(view.getContext(), TwoPlayerGameActivity.class);
+                twoPlayerIntent.putExtra(mInitialValue, mSevenHundredAndOne);
+                startActivity(twoPlayerIntent);
+            }
         }
 
         if (mNumberOfPlayers == 3) {
@@ -105,6 +129,39 @@ public class MainActivity extends AppCompatActivity {
                 Intent threePlayerIntent = new Intent(view.getContext(), ThreePlayerGameActivity.class);
                 threePlayerIntent.putExtra(mInitialValue, mThreeHundredAndOne);
                 startActivity(threePlayerIntent);
+            }
+            // If the user chooses the game to start with a score of 501
+            else if (view.getId() == R.id.set_score_501) {
+                Intent threePlayerIntent = new Intent(view.getContext(), ThreePlayerGameActivity.class);
+                threePlayerIntent.putExtra(mInitialValue, mFiveHundredAndOne);
+                startActivity(threePlayerIntent);
+            }
+            // If the user chooses the game to start with a score of 701
+            else if (view.getId() == R.id.set_score_701) {
+                Intent threePlayerIntent = new Intent(view.getContext(), ThreePlayerGameActivity.class);
+                threePlayerIntent.putExtra(mInitialValue, mSevenHundredAndOne);
+                startActivity(threePlayerIntent);
+            }
+        }
+
+        if (mNumberOfPlayers == 4) {
+            // If the user chooses the game to start with a score of 301
+            if (view.getId() == R.id.set_score_301) {
+                Intent fourPlayerIntent = new Intent(view.getContext(), FourPlayerGameActivity.class);
+                fourPlayerIntent.putExtra(mInitialValue, mThreeHundredAndOne);
+                startActivity(fourPlayerIntent);
+            }
+            // If the user chooses the game to start with a score of 501
+            else if (view.getId() == R.id.set_score_501) {
+                Intent fourPlayerIntent = new Intent(view.getContext(), FourPlayerGameActivity.class);
+                fourPlayerIntent.putExtra(mInitialValue, mFiveHundredAndOne);
+                startActivity(fourPlayerIntent);
+            }
+            // If the user chooses the game to start with a score of 701
+            else if (view.getId() == R.id.set_score_701) {
+                Intent fourPlayerIntent = new Intent(view.getContext(), FourPlayerGameActivity.class);
+                fourPlayerIntent.putExtra(mInitialValue, mSevenHundredAndOne);
+                startActivity(fourPlayerIntent);
             }
         }
     }

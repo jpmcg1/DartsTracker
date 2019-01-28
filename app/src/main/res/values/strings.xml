@@ -30,4 +30,22 @@
     <string name="gameIsWon">CONGRATULATIONS!</string>
 
     <string name="scoreOverZero">TOO HIGH A SCORE!</string>
+
+    <string name="nomalTextSizeThreePlayer">32f</string>
+
+    <string name="boldTextSizeThreePlayer">40f</string>
+
+    <string name="resetGame">RESET GAME</string>
+
+    <string name="undo">UNDO</string>
+
+    <string name="whichStartingScorePopupTitle">STARTING SCORE</string>
+
+    <string name="cancelButtonStartingScorePopup">CANCEL</string>
+
+    <string name="score301">301</string>
+
+    <string name="score501">501</string>
+
+    <string name="score701">701</string>
 </resources>

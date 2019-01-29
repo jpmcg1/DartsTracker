@@ -21,7 +21,7 @@ public class MainActivity extends AppCompatActivity {
     // Starting score for the game - updated depending on the user's choice of players
     private int mNumberOfPlayers;
 
-    PopupWindow mPopupWindow;
+    private PopupWindow mPopupWindow;
 
     // The starting values for the game chosen by the user - this is passed via the intent to the
     // appropriate activity. The string variable is the key for passing the int via the intent.
@@ -34,6 +34,18 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // If the user chooses a 1 player game
+        final Button onePlayerGame = (Button) findViewById(R.id.onePlayer);
+        onePlayerGame.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Set the number of players to 2
+                mNumberOfPlayers = 1;
+                // Initiate the pop up for the user to choose the starting score for the game
+                setInitialScorePopup();
+            }
+        });
 
         // If the user chooses a 2 player game
         final Button twoPlayerGame = (Button) findViewById(R.id.twoPlayers);
@@ -92,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    // Close the pop up window
+    // Close the pop up window upon click of the cancel button
     public void cancelPopup(View view) {
         if (view.getId() == R.id.set_score_cancel) {
             mPopupWindow.dismiss();
@@ -102,6 +114,27 @@ public class MainActivity extends AppCompatActivity {
     // Opens the appropriate activity depending on the user's choice of number of players.
     // The starting score for the game is passed to the new activity with the intent.
     public void openNewActivity(View view) {
+        if (mNumberOfPlayers == 1) {
+            // If the user chooses the game to start with a score of 301
+            if (view.getId() == R.id.set_score_301) {
+                Intent onePlayerIntent = new Intent(view.getContext(), OnePlayerGameActivity.class);
+                onePlayerIntent.putExtra(mInitialValue, mThreeHundredAndOne);
+                startActivity(onePlayerIntent);
+            }
+            // If the user chooses the game to start with a score of 501
+            else if (view.getId() == R.id.set_score_501) {
+                Intent onePlayerIntent = new Intent(view.getContext(), OnePlayerGameActivity.class);
+                onePlayerIntent.putExtra(mInitialValue, mFiveHundredAndOne);
+                startActivity(onePlayerIntent);
+            }
+            // If the user chooses the game to start with a score of 701
+            else if (view.getId() == R.id.set_score_701) {
+                Intent onePlayerIntent = new Intent(view.getContext(), OnePlayerGameActivity.class);
+                onePlayerIntent.putExtra(mInitialValue, mSevenHundredAndOne);
+                startActivity(onePlayerIntent);
+            }
+        }
+
         if (mNumberOfPlayers == 2) {
             // If the user chooses the game to start with a score of 301
             if (view.getId() == R.id.set_score_301) {

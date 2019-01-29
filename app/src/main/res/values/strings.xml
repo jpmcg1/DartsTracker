@@ -48,4 +48,6 @@
     <string name="score501">501</string>
 
     <string name="score701">701</string>
+    
+    <string name="scoreHistory">SCORE HISTORY</string>
 </resources>
